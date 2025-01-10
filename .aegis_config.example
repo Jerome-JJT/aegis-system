@@ -1,0 +1,28 @@
+{
+    "checks": [
+        {
+            "id": "BUS",
+            "name": "Bus",
+            "type": "stationboard",
+            "query": "station=Renens, Village",
+            "min_delay": 2,
+            "checks": 5,
+            "display": true,
+            "notify_start": "18:45:00",
+            "notify_end": "18:55",
+            "check_frequency": 30
+        },
+        {
+            "id": "TRAINS",
+            "name": "Trains",
+            "type": "stationboard",
+            "query": "station=Renens",
+            "min_delay": 2,
+            "checks": 30,
+            "display": true,
+            "notify_start": null,
+            "notify_end": null,
+            "check_frequency": 120
+        }
+    ]
+}

@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta http-equiv="X-UA-Compatible" content="ie=edge">
+    <title>AEGIS</title>
+    <link rel="stylesheet" href="styles.css">
+
+    <!-- <script src="https://cdn.jsdelivr.net/npm/vue@3.5.13/dist/vue.global.prod.js"></script> -->
+    <script src="vue.global.prod.js"></script>
+    <style>
+        body {
+            /* background-color: blue; */
+            background-color: #2d327d;
+            color: #eeeeee;
+            font-size: 20px;
+            font-family: "helvetica", "sans-serif";
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 20px;
+
+            /* border: 2px solid red; */
+            padding: 2px;
+        }
+
+        tr {
+            height: 32px;
+            border-bottom: 1px solid white;
+        }
+
+        /* td:first-child {
+        } */
+
+        thead tr,
+        tr:nth-child(2n+2) {
+            background-color: #4d529d;
+        }
+
+        td:first-child div {
+            padding-left: 1px;
+            padding-top: 1px;
+            margin-right: 10px;
+            background-color: white;
+            color: black;
+        }
+
+        /* td:nth-child(5) */
+        /* td:nth-child(5) */
+        td:last-child {
+            color: yellow;
+        }
+
+        th {
+            text-align: left;
+        }
+
+        html, body, body > div, body > div > div {
+            margin: 0;
+            height: 100%;
+            box-sizing: border-box;
+        }
+        #main {
+            padding: 10px;
+        }
+        .danger {
+            border: 4px solid orange;
+        }
+    </style>
+</head>
+
+<body>
+    <div id="app">
+        <div id="main" :class="{ danger: !this.connected }">
+
+            <div v-if="!Object.keys(tables).length" class="loader" style="margin: 40% auto; width: 15vh; height: 15vh"></div>
+
+            <div v-for="(table, key) in tables" :key="tableIndex">
+                <h2>Table {{ table.table_name }}</h2>
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="width: 80px">Type</th>
+                            <th style="width: 120px">Heure</th>
+                            <th style="width: 50px">Dir</th>
+                            <th style="width: auto">Destination</th>
+                            <th style="width: 50px">Voie</th>
+                            <th style="width: 300px">Remarque</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr v-for="(train, trainIndex) in table.trains" :key="trainIndex">
+                            <td>
+                                <div>{{ train.category }} {{ train.number }}</div>
+                            </td>
+                            <td><time-component :time="train.start.time" :pronotime="train.start.prono_time"/></td>
+                            <td>{{ train.dir }}</td>
+                            <td>{{ train.to }}</td>
+                            <td style="text-align: center;">{{ train.start.platform ?? '-' }}</td>
+                            <td>{{ this.formatRemark(train) }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const parseTime = (input) => {
+            const date = new Date(input);
+            return new Intl.DateTimeFormat(
+                'en-GB',
+                { hour: '2-digit', minute: '2-digit' }
+            ).format(date);
+        };
+
+        Vue.createApp({
+            components: {
+                'time-component': {
+                    props: ['time', 'pronotime'],
+                    computed: {
+                        templateToUse() {
+                            if (this.pronotime !== undefined && this.pronotime !== null && this.time !== this.pronotime) {
+                                return `
+                                    <del>${parseTime(this.time)}</del> 
+                                    <span style="color: yellow;">${parseTime(this.pronotime)}</span>
+                                `;
+                            }
+                            else {
+                                return `<span>${parseTime(this.time)}</span>`
+                            }
+                        }
+                    },
+                    template: `
+                        <span v-html="templateToUse"></span>
+                    `
+                }
+            },
+            data() {
+                return {
+                    connected: false,
+                    tables: {}
+                };
+            },
+            methods: {
+                pluralize(number, singular = "", plural = "s") {
+                    return (number == 1 ? singular : plural);
+                },
+                formatRemark(train) {
+                    str = [];
+                    if (train.start.delay > 0) {
+                        str.push(`${train.start.delay} ${this.pluralize(train.start.delay, 'minute', 'minutes')}`);
+                    }
+                    if (train.start.prono_platform != null && train.start.platform != train.start.prono_platform) {
+                        str.push(`platform ${train.start.prono_platform}`);
+                    }
+                    return str.join(", ");
+                },
+
+                tryConnect(timeout = 1000) {
+                    this.connection = new WebSocket("//localhost:8765");
+
+                    this.connection.onmessage = (event) => {
+                        try {
+                            this.onData(JSON.parse(event.data));
+                        }
+                        catch (error) {
+                            if (error instanceof SyntaxError) {
+                                console.error("Failed to parse JSON:", error.message);
+                            }
+                            else {
+                                throw error;
+                            }
+                        }
+                    }
+
+                    this.connection.onopen = (event) => {
+                        this.connected = true;
+                        console.log("Successfully connected to the echo websocket server...");
+                        this.connection.send(JSON.stringify({ "COMMAND": "SUBSCRIBE" }));
+                    }
+
+                    this.connection.onclose = (event) => {
+                        this.connected = false;
+                        console.log('onclose triggered, retry in', timeout)
+                        setTimeout(() => {
+                            this.tryConnect(Math.min(timeout * 3, 10 * 60 * 1000));
+                        }, timeout);
+                    }
+                },
+                onData(data) {
+                    try {
+                        if (!Object.keys(this.tables).includes(data["id"])) {
+                            this.tables[data["id"]] = {
+                                table_name: data["name"],
+                                trains: [],
+                            }
+                        }
+                        this.tables[data["id"]]["trains"] = data["elems"];
+
+                        console.log(data["elems"]);
+                    }
+                    catch (error) {
+                        console.error("Error fetching table data:", error);
+                    }
+                }
+            },
+            created() {
+                this.tryConnect();
+            }
+        }).mount('#app');
+    </script>
+</body>
+
+</html>

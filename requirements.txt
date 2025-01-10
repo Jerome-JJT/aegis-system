@@ -1,0 +1,6 @@
+requests
+rich
+python-dateutil
+python-dotenv
+pytz
+websockets
