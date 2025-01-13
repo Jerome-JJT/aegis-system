@@ -4,3 +4,6 @@ python-dateutil
 python-dotenv
 pytz
 websockets
+
+Adafruit_Python_DHT
+RPi.GPIO
