@@ -44,7 +44,7 @@ class StandbyManager:
             
             GPIO.setmode(GPIO.BOARD)
             GPIO.setup(cls._instance.PIR_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-            # GPIO.setup(cls._instance.CLAP_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+            GPIO.setup(cls._instance.CLAP_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
     
         return cls._instance
     
@@ -69,51 +69,50 @@ CLIENTS = set()
 manager = StandbyManager()
 
 
-# def sleep_watcher():
-#     global CLIENTS
-#     manager = StandbyManager()
-    
-#     while True:
-#         pir = manager.get_pir()
-        
-#         if (pir == True):
-#             manager.curr_timer = datetime.datetime.now()
-        
-#         for client in CLIENTS:
-#             try:
-#                 client.send(json.dumps({
-#                     'type': 'SLEEP', 
-#                     'timer': manager.curr_timer, 
-#                 }))
-#             except websockets.exceptions.ConnectionClosedError:
-#                 CLIENTS.remove(client)
-        
-#         time.sleep(30)
-        
+def sleep_watcher():
+    global CLIENTS
+    manager = StandbyManager()
 
-# def temp_watcher():
-#     global CLIENTS
-#     manager = StandbyManager()
-    
-#     while True:
-#         humidity, temperature = manager.get_temp_humid()
-        
-#         manager.curr_temperature = temperature
-#         manager.curr_humidity = humidity
-        
-#         rich.print(CLIENTS)
-#         for client in CLIENTS:
-#             try:
-#                 client.send(json.dumps({
-#                     'type': 'TEMP', 
-#                     'temperature': manager.curr_temperature, 
-#                     'humidity': manager.curr_humidity
-#                 }))
-#             except websockets.exceptions.ConnectionClosedError:
-#                 CLIENTS.remove(client)
-        
-#         time.sleep(3)
-        
+    while True:
+        pir = manager.get_pir()
+
+        if (pir == True):
+            manager.curr_timer = datetime.datetime.now()
+
+        for client in CLIENTS:
+            try:
+                client.send(json.dumps({
+                    'type': 'SLEEP',
+                    'timer': manager.curr_timer,
+                }))
+            except websockets.exceptions.ConnectionClosedError:
+                CLIENTS.remove(client)
+
+        time.sleep(30)
+
+
+def temp_watcher():
+    global CLIENTS
+    manager = StandbyManager()
+
+    while True:
+        humidity, temperature = manager.get_temp_humid()
+
+        manager.curr_temperature = temperature
+        manager.curr_humidity = humidity
+
+        for client in CLIENTS:
+            try:
+                client.send(json.dumps({
+                    'type': 'TEMP',
+                    'temperature-int': manager.curr_temperature,
+                    'humidity-int': manager.curr_humidity
+                }))
+            except websockets.exceptions.ConnectionClosedError:
+                CLIENTS.remove(client)
+
+        time.sleep(3)
+
 
 def handle(websocket):
     try:
@@ -146,13 +145,13 @@ def handle(websocket):
 
 def main():
     threads = []
-    
+
     # threads.append(threading.Thread(target=sleep_watcher, args=()))
     # threads[-1].start()
-    # threads.append(threading.Thread(target=temp_watcher, args=()))
-    # threads[-1].start()
+    threads.append(threading.Thread(target=temp_watcher, args=()))
+    threads[-1].start()
 
-    with serve(handle, "localhost", 8765) as server:
+    with serve(handle, "0.0.0.0", 8766) as server:
         server.serve_forever()
 
     for thread in threads:

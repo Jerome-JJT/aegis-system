@@ -206,7 +206,8 @@
                 },
 
                 tryConnect(timeout = 1000) {
-                    this.connection = new WebSocket("//localhost:8766");
+                    //this.connection = new WebSocket("//localhost:8765");
+                    this.connection = new WebSocket(`//${window.location.hostname}:8765`);
 
                     this.connection.onmessage = (event) => {
                         try {
@@ -238,7 +239,8 @@
                 },
 
                 tryConnectInfo(timeout = 1000) {
-                    this.infoConnect = new WebSocket("//localhost:8765");
+                    //this.infoConnect = new WebSocket("//localhost:8766");
+                    this.infoConnect = new WebSocket(`//${window.location.hostname}:8766`);
 
                     this.infoConnect.onmessage = (event) => {
                         try {
@@ -291,13 +293,13 @@
                         typ = data["type"];
 
                         if (typ == "TEMP") {
-                            document.getElementById("info-int-temp").value = `${data["temperature-int"]}`;
-                            document.getElementById("info-int-humid").value = `${data["humidity-int"]}`;
-                            document.getElementById("info-ext-temp").value = `${data["temperature-int"]}`;
-                            document.getElementById("info-ext-humid").value = `${data["humidity-int"]}`;
+                            document.getElementById("info-int-temp").textContent = `${data["temperature-int"]}°C`;
+                            document.getElementById("info-int-humid").textContent = `${data["humidity-int"]} %`;
+                            document.getElementById("info-ext-temp").textContent = `${data["temperature-int"]}°C`;
+                            document.getElementById("info-ext-humid").textContent = `${data["humidity-int"]} %`;
                         }
                         else if (typ == "SLEEP") {
-                            document.getElementById("info-sleep").value = `${data["timer"]}`;
+                            document.getElementById("info-sleep").textContent = `${data["timer"]}`;
                         }
                         else {
                             console.error("Unknown infobox type", error);
