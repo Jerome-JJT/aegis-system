@@ -24,7 +24,6 @@ buffers = {}
 def handle(websocket):
     try:
         for message in websocket:
-
             try:
                 payload = json.loads(message)
                 if (payload.get("COMMAND") == "SUBSCRIBE"):
@@ -153,7 +152,6 @@ def check_changes(elem, conf):
     }
 
 def update(check):
-
     conf_id = check["id"]
 
     if (check.get('type') == 'connection'): # period start and period end

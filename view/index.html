@@ -37,8 +37,7 @@
         /* td:first-child {
         } */
 
-        thead tr,
-        tr:nth-child(2n+2) {
+        thead tr, tr:nth-child(2n+2) {
             background-color: #4d529d;
         }
 
@@ -71,12 +70,55 @@
         .danger {
             border: 4px solid orange;
         }
+        .hidden {
+            display: none !important;
+        }
+
+        #infobox {
+            position: static;
+            float: right;
+            background-color: rgba(255, 255, 255, 0.2);
+
+            border: 2px solid red;
+            border-radius: 20px;
+
+            padding: 10px 20px;
+            margin-right: 20px;
+
+            display: grid;
+            gap: 50px;
+            grid-template-columns: auto auto auto;
+        }
+        #infobox > div {
+            display: grid; 
+            grid-template: auto auto / auto auto; 
+            column-gap: 10px;
+        }
     </style>
 </head>
 
 <body>
     <div id="app">
         <div id="main" :class="{ danger: !this.connected }">
+
+            <div id="infobox" :class="{ hidden: !this.infoConnected }">
+                <div>
+                    <span>Estimed sleep :</span>
+                    <span id="info-sleep">14:05</span>
+                </div>
+                <div>
+                    <span>Temp int :</span>
+                    <span id="info-int-temp">26.0°C</span>
+                    <span>Humid int :</span>
+                    <span id="info-int-humid">9.0 %</span>
+                </div>
+                <div>
+                    <span>Temp ext :</span>
+                    <span id="info-ext-temp">26.0°C</span>
+                    <span>Humid ext :</span>
+                    <span id="info-ext-humid">9.0 %</span>
+                </div>
+            </div>
 
             <div v-if="!Object.keys(tables).length" class="loader" style="margin: 40% auto; width: 15vh; height: 15vh"></div>
 
@@ -144,6 +186,7 @@
             data() {
                 return {
                     connected: false,
+                    infoConnected: false,
                     tables: {}
                 };
             },
@@ -163,7 +206,7 @@
                 },
 
                 tryConnect(timeout = 1000) {
-                    this.connection = new WebSocket("//localhost:8765");
+                    this.connection = new WebSocket("//localhost:8766");
 
                     this.connection.onmessage = (event) => {
                         try {
@@ -171,7 +214,7 @@
                         }
                         catch (error) {
                             if (error instanceof SyntaxError) {
-                                console.error("Failed to parse JSON:", error.message);
+                                console.error("Failed to parse main JSON:", error.message);
                             }
                             else {
                                 throw error;
@@ -181,20 +224,54 @@
 
                     this.connection.onopen = (event) => {
                         this.connected = true;
-                        console.log("Successfully connected to the echo websocket server...");
+                        console.log("Successfully connected to the main websocket server...");
                         this.connection.send(JSON.stringify({ "COMMAND": "SUBSCRIBE" }));
                     }
 
                     this.connection.onclose = (event) => {
                         this.connected = false;
-                        console.log('onclose triggered, retry in', timeout)
+                        console.log('main onclose triggered, retry in', timeout)
                         setTimeout(() => {
                             this.tryConnect(Math.min(timeout * 3, 10 * 60 * 1000));
                         }, timeout);
                     }
                 },
+
+                tryConnectInfo(timeout = 1000) {
+                    this.infoConnect = new WebSocket("//localhost:8765");
+
+                    this.infoConnect.onmessage = (event) => {
+                        try {
+                            this.onDataInfo(JSON.parse(event.data));
+                        }
+                        catch (error) {
+                            if (error instanceof SyntaxError) {
+                                console.error("Failed to parse infobox JSON:", error.message);
+                            }
+                            else {
+                                throw error;
+                            }
+                        }
+                    }
+
+                    this.infoConnect.onopen = (event) => {
+                        this.infoConnected = true;
+                        console.log("Successfully connected to the infobox websocket server...");
+                        this.infoConnect.send(JSON.stringify({ "COMMAND": "SUBSCRIBE" }));
+                    }
+
+                    this.infoConnect.onclose = (event) => {
+                        this.infoConnected = false;
+                        console.log('infobox onclose triggered, retry in', timeout)
+                        setTimeout(() => {
+                            this.tryConnectInfo(Math.min(timeout * 3, 10 * 60 * 1000));
+                        }, timeout);
+                    }
+                },
                 onData(data) {
                     try {
+                        console.log('new trains', data["elems"]);
+
                         if (!Object.keys(this.tables).includes(data["id"])) {
                             this.tables[data["id"]] = {
                                 table_name: data["name"],
@@ -202,16 +279,38 @@
                             }
                         }
                         this.tables[data["id"]]["trains"] = data["elems"];
-
-                        console.log(data["elems"]);
                     }
                     catch (error) {
                         console.error("Error fetching table data:", error);
+                    }
+                },
+                onDataInfo(data) {
+                    try {
+                        console.log('new infos', data);
+
+                        typ = data["type"];
+
+                        if (typ == "TEMP") {
+                            document.getElementById("info-int-temp").value = `${data["temperature-int"]}`;
+                            document.getElementById("info-int-humid").value = `${data["humidity-int"]}`;
+                            document.getElementById("info-ext-temp").value = `${data["temperature-int"]}`;
+                            document.getElementById("info-ext-humid").value = `${data["humidity-int"]}`;
+                        }
+                        else if (typ == "SLEEP") {
+                            document.getElementById("info-sleep").value = `${data["timer"]}`;
+                        }
+                        else {
+                            console.error("Unknown infobox type", error);
+                        }
+                    }
+                    catch (error) {
+                        console.error("Error fetching infobox data:", error);
                     }
                 }
             },
             created() {
                 this.tryConnect();
+                this.tryConnectInfo();
             }
         }).mount('#app');
     </script>

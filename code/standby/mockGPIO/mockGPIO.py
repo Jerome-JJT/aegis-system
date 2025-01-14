@@ -1,5 +1,5 @@
 # coding=utf-8
-
+import random
 
 class GPIO():
 
@@ -30,6 +30,7 @@ class GPIO():
 	OUT = 4
 	IN = 4
 	PUD_UP = 4
+	BOARD = 4
  
 	def setwarnings(t):
 		pass
@@ -41,7 +42,7 @@ class GPIO():
 		pass
 
 	def input(t):
-		pass
+		return random.randint(0, 20) == 0
 
 	def output(a, t):
 		pass

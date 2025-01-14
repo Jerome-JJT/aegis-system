@@ -2,32 +2,52 @@
 import os
 import time
 import rich
-import atexit
+import datetime
+import threading
+import json
 
 try:
     import RPi.GPIO as GPIO
 except ImportError:
-    from mockGPIO import GPIO
-import Adafruit_DHT
+    from .mockGPIO import GPIO
+    
+try:
+    import Adafruit_DHT
+except ImportError:
+    from .mockAdafruit_DHT import Adafruit_DHT
+
+import websockets
+from websockets.sync.server import serve
 
 from dotenv import load_dotenv
 
 load_dotenv()
 
 
-class ControllerManager:
+class StandbyManager:
+    _instance = None
+    
+    curr_timer = 1900
+    curr_temperature = 0
+    curr_humidity = 0
 
     #passive infrared
     PIR_PIN = int(os.getenv('PIR_PIN'))
     CLAP_PIN = int(os.getenv('CLAP_PIN'))
     TEMP_PIN = int(os.getenv('TEMP_PIN'))
-
-
-    def __init__(self):
-        GPIO.setmode(GPIO.BOARD)
-        GPIO.setup(self.PIR_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-#        GPIO.setup(self.CLAP_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-
+    
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super(StandbyManager, cls).__new__(cls)
+            cls._instance.curr_temperature = 0
+            cls._instance.curr_humidity = 0
+            
+            GPIO.setmode(GPIO.BOARD)
+            GPIO.setup(cls._instance.PIR_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+            # GPIO.setup(cls._instance.CLAP_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+    
+        return cls._instance
+    
 
     def get_pir(self):
         return bool(GPIO.input(self.PIR_PIN))
@@ -42,74 +62,122 @@ class ControllerManager:
         rich.print(start_time, end_time, end_time - start_time)
         return (humidity, temperature)
 
-    # def update_buttons(self):
-    #     for num in range(self.SIZE):
-    #         self.prev_button_state[num] = self.button_state[num]
-    #         self.button_state[num] = self.TM.switches[num]
-    #     self.button_state[0] = self.button_state[0] or (not GPIO.input(self.BIG_BUTTON_PIN))
-
-    # def button_just_pressed(self, num):
-    #     return not self.prev_button_state[num] and self.button_state[num]
-
-    # def button_just_released(self, num):
-    #     return not self.prev_button_state[num] and self.button_state[num]
-    # def get_buttons(self):
-    #     return [self.TM.switches[i] for i in range(self.SIZE)]
-
-    # def get_button(self, num):
-    #     return self.TM.switches[num]
-
-    # def set_leds(self, vals):
-    #     for num, val in enumerate(vals):
-    #         self.TM.leds[num] = val
-
-    # def set_led(self, num, val):
-    #     self.TM.leds[num] = val
-
-    # def write_text(self, str, index=0):
-    #     for i in range(self.SIZE):
-    #         if (i >= index and i < len(str) + index):
-    #             self.TM.segments[i] = str[i - index]
-    #         else:
-    #             self.TM.segments[i] = " "
-    #     pass
-
-    # def clear(self):
-    #     for num in range(self.SIZE):
-    #         self.TM.segments[num] = ' '
-    #         self.TM.leds[num] = False
 
 
-# Tests
-if __name__ == '__main__':
+
+CLIENTS = set()
+manager = StandbyManager()
+
+
+# def sleep_watcher():
+#     global CLIENTS
+#     manager = StandbyManager()
     
-    rich.print("hello")
-    contr = ControllerManager()
+#     while True:
+#         pir = manager.get_pir()
+        
+#         if (pir == True):
+#             manager.curr_timer = datetime.datetime.now()
+        
+#         for client in CLIENTS:
+#             try:
+#                 client.send(json.dumps({
+#                     'type': 'SLEEP', 
+#                     'timer': manager.curr_timer, 
+#                 }))
+#             except websockets.exceptions.ConnectionClosedError:
+#                 CLIENTS.remove(client)
+        
+#         time.sleep(30)
+        
 
-#     atexit.register(lambda: contr.clear())
+# def temp_watcher():
+#     global CLIENTS
+#     manager = StandbyManager()
+    
+#     while True:
+#         humidity, temperature = manager.get_temp_humid()
+        
+#         manager.curr_temperature = temperature
+#         manager.curr_humidity = humidity
+        
+#         rich.print(CLIENTS)
+#         for client in CLIENTS:
+#             try:
+#                 client.send(json.dumps({
+#                     'type': 'TEMP', 
+#                     'temperature': manager.curr_temperature, 
+#                     'humidity': manager.curr_humidity
+#                 }))
+#             except websockets.exceptions.ConnectionClosedError:
+#                 CLIENTS.remove(client)
+        
+#         time.sleep(3)
+        
 
+def handle(websocket):
+    try:
+        for message in websocket:
+            try:
+                payload = json.loads(message)
+                if (payload.get("COMMAND") == "SUBSCRIBE"):
+                    rich.print("[yellow]subscribed")
+                    CLIENTS.add(websocket)
 
-#     contr.write_text("abcdefghi", 2)
+                    websocket.send(json.dumps({
+                        'type': 'TEMP',
+                        'temperature-int': manager.curr_temperature,
+                        'humidity-int': manager.curr_humidity
+                    }))
+                    websocket.send(json.dumps({
+                        'type': 'SLEEP',
+                        'timer': manager.curr_timer,
+                    }))
 
-    oldval = False
-    oldcnt = 0
+            except json.decoder.JSONDecodeError:
+                rich.print(f"[red]unparsable {message}")
 
-    while (True):
-        #res = contr.get_pir()
-#        res = contr.get_clap()
-#        if (oldval == res):
-#            oldcnt += 1
-#        else:
-#            oldcnt = 0
+    except websockets.exceptions.ConnectionClosedError:
+        CLIENTS.remove(websocket)
+        pass
+    finally:
+        CLIENTS.remove(websocket)
+    
 
-#        oldval = res
-#        rich.print(res, oldcnt)
+def main():
+    threads = []
+    
+    # threads.append(threading.Thread(target=sleep_watcher, args=()))
+    # threads[-1].start()
+    # threads.append(threading.Thread(target=temp_watcher, args=()))
+    # threads[-1].start()
 
-        h, t = contr.get_temp_humid()
-        print(f"Measured Temp={t}°C | Hum={h}%")
+    with serve(handle, "localhost", 8765) as server:
+        server.serve_forever()
 
-        time.sleep(0.1)
+    for thread in threads:
+        thread.join()
 
+if __name__ == '__main__':
+    main()
+    
+#     rich.print("hello")
 
-#     contr.clear()
-#     rich.print("END")
+#     oldval = False
+#     oldcnt = 0
+
+#     while (True):
+#         res = manager.get_pir()
+# #        res = manager.get_clap()
+# #        if (oldval == res):
+# #            oldcnt += 1
+# #        else:
+# #            oldcnt = 0
+
+# #        oldval = res
+#         rich.print(res, oldcnt)
+
+#         # h, t = manager.get_temp_humid()
+#         # print(f"Measured Temp={t}°C | Hum={h}%")
+
+#         time.sleep(0.1)
