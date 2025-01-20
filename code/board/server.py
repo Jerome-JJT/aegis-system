@@ -4,6 +4,7 @@ import rich
 import json
 import time
 
+import click
 import threading
 import datetime
 import pytz
@@ -187,7 +188,9 @@ def updater(check):
         update(check)
         time.sleep(check.get("check_frequency") or 60)
 
-def main():
+@click.command()
+@click.option("--server", "-s", type=bool, is_flag=True, default=False, help="update all")
+def main(server=False):
     threads = []
 
     for check in conf_manager.check_list:
@@ -195,8 +198,10 @@ def main():
         threads[-1].start()
         time.sleep(1)
 
-    with serve(handle, "localhost", 8765) as server:
-        server.serve_forever()
+    if (server):
+        rich.print("[magenta]Started server")
+        with serve(handle, "localhost", 8765) as server:
+            server.serve_forever()
 
     for thread in threads:
         thread.join()

@@ -4,6 +4,7 @@ python-dateutil
 python-dotenv
 pytz
 websockets
+click
 
 Adafruit_Python_DHT
 RPi.GPIO

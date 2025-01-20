@@ -1,0 +1,25 @@
+[Unit]
+Description=AEGIS cff server
+
+[Service]
+Environment=PATH=/home/admin/aegis-system/env/bin
+#Environment=
+WorkingDirectory=/home/admin/aegis-system
+ExecStart=/home/admin/aegis-system/env/bin/python -m code.board.server
+#ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -9 $MAINPID
+TimeoutSec=0
+RestartSec=2
+Restart=always
+StartLimitBurst=3
+StartLimitInterval=60s
+LimitNOFILE=infinity
+LimitNPROC=infinity
+LimitCORE=infinity
+TasksMax=infinity
+Delegate=yes
+Type=simple
+KillMode=mixed
+
+[Install]
+WantedBy=default.target
