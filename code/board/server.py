@@ -66,7 +66,7 @@ def notify(changes, infos):
     embed['title'] += f'{infos["start"]["delay"]} {pluralize(infos["start"]["delay"], "minute", "minutes")} delay'
     
     embed['fields'] = dict({
-        k.capitalize(): f'ref: {v["old"]}{'\n' if len(str(v['new'])) > 0 else ' '}new: {v["new"]}' for k, v in changes.items()
+        k.capitalize(): f'ref: {v["old"]}{"\n" if len(str(v["new"])) > 0 else " "}new: {v["new"]}' for k, v in changes.items()
     })
     
     payload = create_discord_payload(embed)
