@@ -6,5 +6,7 @@ pytz
 websockets
 click
 
+keyboard
+
 Adafruit_Python_DHT
 RPi.GPIO

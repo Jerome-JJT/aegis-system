@@ -5,6 +5,7 @@ import rich
 import datetime
 import threading
 import json
+import click
 
 try:
     import RPi.GPIO as GPIO
@@ -141,9 +142,11 @@ def handle(websocket):
         pass
     finally:
         CLIENTS.remove(websocket)
-    
 
-def main():
+
+@click.command()
+@click.option("--server", "-s", type=bool, is_flag=True, default=False, help="update all")
+def main(server=False):
     threads = []
 
     # threads.append(threading.Thread(target=sleep_watcher, args=()))
@@ -151,8 +154,9 @@ def main():
     threads.append(threading.Thread(target=temp_watcher, args=()))
     threads[-1].start()
 
-    with serve(handle, "0.0.0.0", 8766) as server:
-        server.serve_forever()
+    if (server):
+        with serve(handle, "0.0.0.0", 8766) as server:
+            server.serve_forever()
 
     for thread in threads:
         thread.join()
