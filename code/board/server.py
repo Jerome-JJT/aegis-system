@@ -62,8 +62,8 @@ def notify(changes, infos):
     #     cat = "train"
 
 
-    embed['title'] = f'`{infos["start"]["name"]}` to `{infos["to"]}` at {infos['start']['time'][11:16]}\n'
-    embed['title'] += f'{infos['start']['delay']} {pluralize(infos['start']['delay'], 'minute', 'minutes')} delay'
+    embed['title'] = f'`{infos["start"]["name"]}` to `{infos["to"]}` at {infos["start"]["time"][11:16]}\n'
+    embed['title'] += f'{infos["start"]["delay"]} {pluralize(infos["start"]["delay"], "minute", "minutes")} delay'
     
     embed['fields'] = dict({
         k.capitalize(): f'ref: {v["old"]}{'\n' if len(str(v['new'])) > 0 else ' '}new: {v["new"]}' for k, v in changes.items()
@@ -176,7 +176,7 @@ def update(check):
         try:
             check_changes(elem, check)
         except Exception as e:
-            rich.print("[red]", 'undexpeceted erorr', e, elem)
+            rich.print("[red]", 'unexpected error', e, elem)
 
     tcmp = round(datetime.datetime.timestamp(datetime.datetime.now())) - (check.get("check_frequency") or 30)
     buffers[conf_id] = {k: v for k, v in buffers[conf_id].items() if v["last_update"] > tcmp}
