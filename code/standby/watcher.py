@@ -43,9 +43,14 @@ class StandbyManager:
             cls._instance.curr_temperature = 0
             cls._instance.curr_humidity = 0
             
+            GPIO.cleanup()
+
             GPIO.setmode(GPIO.BOARD)
             GPIO.setup(cls._instance.PIR_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-            GPIO.setup(cls._instance.CLAP_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+            GPIO.setup(cls._instance.CLAP_PIN, GPIO.IN)
+#            GPIO.setup(cls._instance.CLAP_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+            GPIO.add_event_detect(cls._instance.CLAP_PIN, GPIO.BOTH, callback=cls._instance.get_clap, bouncetime=300)
+#            GPIO.add_event_callback(cls._instance.CLAP_PIN, cls._instance.get_clap)
     
         return cls._instance
     
@@ -53,8 +58,13 @@ class StandbyManager:
     def get_pir(self):
         return bool(GPIO.input(self.PIR_PIN))
 
-    def get_clap(self):
-        return not(bool(GPIO.input(self.CLAP_PIN)))
+    def get_clap(self, chan):
+        val = not(bool(GPIO.input(self.CLAP_PIN)))
+        rich.print("MOVE to", val)
+
+        if (val == True):
+            self.curr_timer = datetime.datetime.now()
+        #return not(bool(GPIO.input(self.CLAP_PIN)))
 
     def get_temp_humid(self):
         start_time = time.time()
@@ -163,22 +173,22 @@ def main(server=False):
 
 if __name__ == '__main__':
     main()
-    
+
 #     rich.print("hello")
 
 #     oldval = False
-#     oldcnt = 0
+    oldcnt = 0
 
-#     while (True):
+    while (True):
 #         res = manager.get_pir()
-# #        res = manager.get_clap()
+        res = manager.get_clap()
 # #        if (oldval == res):
 # #            oldcnt += 1
 # #        else:
 # #            oldcnt = 0
 
 # #        oldval = res
-#         rich.print(res, oldcnt)
+        rich.print(res, oldcnt)
 
 #         # h, t = manager.get_temp_humid()
 #         # print(f"Measured Temp={t}°C | Hum={h}%")

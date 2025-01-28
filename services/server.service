@@ -5,7 +5,7 @@ Description=AEGIS cff server
 Environment=PATH=/home/admin/aegis-system/env/bin
 #Environment=
 WorkingDirectory=/home/admin/aegis-system
-ExecStart=/home/admin/aegis-system/env/bin/python -m code.board.server
+ExecStart=/home/admin/aegis-system/env/bin/python -m code.board.server --server
 #ExecReload=/bin/kill -s HUP $MAINPID
 ExecStop=/bin/kill -9 $MAINPID
 TimeoutSec=0

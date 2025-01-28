@@ -1,0 +1,32 @@
+[Unit]
+Description=AEGIS browser display
+
+[Service]
+Environment=PATH=/home/admin/aegis-system/env/bin
+#Environment=DISPLAY=:0.0
+#Environment=
+WorkingDirectory=/home/admin
+#ExecStart=ping -c4 8.8.8.8
+#ExecStart=/usr/bin/midori /home/admin/index.html
+ExecStart=(sudo /home/admin/logger/keyboard.sh)
+#ExecStart=((sudo /home/admin/logger/keyboard.sh &) && midori /home/admin/index.html)
+#/home/admin/aegis-system/env/bin/python -m code.board.server
+#ExecReload=/bin/kill -s HUP $MAINPID
+ExecStop=/bin/kill -9 $MAINPID
+StandardOutput=append:/var/log/aegis/browser.log
+StandardError=append:/var/log/aegis/browser.error
+TimeoutSec=0
+RestartSec=2
+Restart=always
+StartLimitBurst=3
+StartLimitInterval=60s
+LimitNOFILE=infinity
+LimitNPROC=infinity
+LimitCORE=infinity
+TasksMax=infinity
+Delegate=yes
+Type=simple
+KillMode=mixed
+
+[Install]
+WantedBy=default.target
