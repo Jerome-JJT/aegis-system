@@ -183,7 +183,7 @@ def update(check):
         except Exception as e:
             rich.print("[red]", 'unexpected error', e, elem)
 
-    tcmp = round(datetime.datetime.timestamp(datetime.datetime.now())) - (check.get("check_frequency") or 30)
+    tcmp = round(datetime.datetime.timestamp(datetime.datetime.now())) - ((check.get("check_frequency") or 30) * 2)
     buffers[conf_id] = {k: v for k, v in buffers[conf_id].items() if v["last_update"] > tcmp}
 
 
@@ -205,7 +205,7 @@ def main(server=False):
 
     if (server):
         rich.print("[magenta]Started server")
-        with serve(handle, "", 8765) as server:
+        with serve(handle, "localhost", 8765) as server:
             server.serve_forever()
     else:
         rich.print("[magenta]SERVERLESS MODE")
