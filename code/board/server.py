@@ -146,7 +146,7 @@ def check_changes(elem, conf):
             time_compare <= conf.get("notify_end")
         )
     )):
-        notify(changes, buffer_elem)
+        notify(changes, elem)
 
     buffers[conf_id][elem_id] = {
         **elem,
