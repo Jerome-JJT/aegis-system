@@ -17,7 +17,7 @@ from code._common.app_config import ConfigManager
 from code._common.discord_message import create_discord_payload, send_discord_payload
 from code._common.utils import pluralize, discord_time
 
-CLIENTS = set()
+CLIENTS = dict()
 conf_manager = ConfigManager()
 buffers = {}
 
@@ -28,8 +28,8 @@ def handle(websocket):
             try:
                 payload = json.loads(message)
                 if (payload.get("COMMAND") == "SUBSCRIBE"):
-                    rich.print("[yellow]subscribed")
-                    CLIENTS.add(websocket)
+                    rich.print(f"[yellow]subscribed {str(websocket.id)[:8]}")
+                    CLIENTS.update({websocket.id: websocket})
 
                     for sub_buffer in buffers.keys():
                         check = next(filter(lambda x: x["id"] == sub_buffer, conf_manager.check_list))
@@ -43,10 +43,14 @@ def handle(websocket):
                 rich.print(f"[red]unparsable {message}")
 
     except websockets.exceptions.ConnectionClosedError:
-        CLIENTS.remove(websocket)
+        if (websocket.id in CLIENTS):
+            CLIENTS.pop(websocket.id)
+        rich.print(f"[yellow]unsubscribed {str(websocket.id)[:8]}")
         pass
     finally:
-        CLIENTS.remove(websocket)
+        if (websocket.id in CLIENTS):
+            CLIENTS.pop(websocket.id)
+        rich.print(f"[yellow]unsubscribed {str(websocket.id)[:8]}")
 
 
 
@@ -66,7 +70,7 @@ def notify(changes, infos):
     embed['title'] += f'{infos["start"]["delay"]} {pluralize(infos["start"]["delay"], "minute", "minutes")} delay'
     
     embed['fields'] = dict({
-        k.capitalize(): f'ref: {v["old"]}{"\n" if len(str(v["new"])) > 0 else " "}new: {v["new"]}' for k, v in changes.items()
+        k.capitalize(): f'ref: {v["old"]}{chr(10) if len(str(v["new"])) > 0 else " "}new: {v["new"]}' for k, v in changes.items()
     })
     
     payload = create_discord_payload(embed)
@@ -78,9 +82,6 @@ def check_changes(elem, conf):
     changes = {}
     conf_id = conf.get("id")
     elem_id = elem["name"]
-
-    if (conf_id not in buffers.keys()):
-        buffers[conf_id] = {}
 
     # First changes detection
     if elem_id not in buffers[conf_id].keys():
@@ -110,7 +111,7 @@ def check_changes(elem, conf):
     # Diff checks
     if (elem["start"]["delay"] != None and 
         (
-            (elem["start"]["delay"] > buffer_elem["start"]["delay"] and buffer_elem["start"]["delay"] >= conf.get("min_delay")) or
+            (elem["start"]["delay"] > buffer_elem["start"]["delay"] and elem["start"]["delay"] >= conf.get("min_delay")) or
             (elem["start"]["delay"] < buffer_elem["start"]["delay"] and buffer_elem["start"]["delay"] >= conf.get("min_delay")) 
         )
     ):
@@ -154,6 +155,8 @@ def check_changes(elem, conf):
 
 def update(check):
     conf_id = check["id"]
+    if (conf_id not in buffers.keys()):
+        buffers[conf_id] = {}
 
     if (check.get('type') == 'connection'): # period start and period end
         res = conn_search(q=check.get('query'), l=check.get('checks') or 5)
@@ -162,16 +165,18 @@ def update(check):
         res = station_search(q=check.get('query'), l=check.get('checks') or 5)
 
     if (check.get('display') == True):
-        for client in CLIENTS:
+        for sockid in CLIENTS:
             try:
-                client.send(json.dumps({
+                CLIENTS[sockid].send(json.dumps({
                     'id': conf_id, 
                     'name': check.get('name'), 
                     'elems': res
                 }))
             except websockets.exceptions.ConnectionClosedError:
-                CLIENTS.remove(client)
-    
+                if (sockid in CLIENTS):
+                    CLIENTS.pop(sockid)
+                rich.print(f"[yellow]unsubscribed {str(sockid)[:8]}")
+
     for elem in res:
         try:
             check_changes(elem, check)
@@ -200,8 +205,10 @@ def main(server=False):
 
     if (server):
         rich.print("[magenta]Started server")
-        with serve(handle, "localhost", 8765) as server:
+        with serve(handle, "", 8765) as server:
             server.serve_forever()
+    else:
+        rich.print("[magenta]SERVERLESS MODE")
 
     for thread in threads:
         thread.join()

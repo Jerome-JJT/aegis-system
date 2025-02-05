@@ -94,40 +94,50 @@ def conn_search(q="from=Chavornay&to=Renens", l=10):
     
     # limiter = "&fields[]=connections/from&fields[]=connections/to&fields[]=connections/duration&fields[]=connections/transfers&fields[]=connections/products"
 
-    url = f"http://transport.opendata.ch/v1/connections?{q}&limit={l}"
-    rich.print("REQ", url)
-    req = requests.get(url)
+    try:
+        url = f"http://transport.opendata.ch/v1/connections?{q}&limit={l}"
+        rich.print("REQ", url)
+        req = requests.get(url)
 
-    if (req.ok):
-        js = req.json()
-        
-        cons = list(map(lambda x: parse_con(x), js["connections"]))
+        if (req.ok):
+            js = req.json()
+            
+            cons = list(map(lambda x: parse_con(x), js["connections"]))
 
-        # rich.print(cons)
-        
-        return cons
+            # rich.print(cons)
+            
+            return cons
 
-    else:
-        rich.print(f"[red]FAIL {req.status_code} {req.reason}")
+        else:
+            rich.print(f"[red]FAIL {req.status_code} {req.reason}")
+            return []
+
+    except requests.exceptions.ConnectionError:
+        rich.print(f"[red]FAIL ConnectionError")
         return []
 
 def station_search(q="station=Renens, Village", l=10):
     
-    url = f"http://transport.opendata.ch/v1/stationboard?{q}&limit={l}"
-    rich.print("REQ", url)
-    req = requests.get(url)
+    try:
+        url = f"http://transport.opendata.ch/v1/stationboard?{q}&limit={l}"
+        rich.print("REQ", url)
+        req = requests.get(url)
 
-    if (req.ok):
-        js = req.json()
+        if (req.ok):
+            js = req.json()
 
-        stati = list(map(lambda x: parse_stationboard(x), js["stationboard"]))
-        
-        # rich.print(stati)
-        
-        return stati
+            stati = list(map(lambda x: parse_stationboard(x), js["stationboard"]))
+            
+            # rich.print(stati)
+            
+            return stati
 
-    else:
-        rich.print(f"[red]FAIL {req.status_code} {req.reason}")
+        else:
+            rich.print(f"[red]FAIL {req.status_code} {req.reason}")
+            return []
+
+    except requests.exceptions.ConnectionError:
+        rich.print(f"[red]FAIL ConnectionError")
         return []
 
 

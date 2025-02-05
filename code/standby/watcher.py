@@ -76,7 +76,7 @@ class StandbyManager:
 
 
 
-CLIENTS = set()
+CLIENTS = dict()
 manager = StandbyManager()
 
 
@@ -90,14 +90,16 @@ def sleep_watcher():
         if (pir == True):
             manager.curr_timer = datetime.datetime.now()
 
-        for client in CLIENTS:
+        for sockid in CLIENTS:
             try:
-                client.send(json.dumps({
+                CLIENTS[sockid].send(json.dumps({
                     'type': 'SLEEP',
                     'timer': manager.curr_timer,
                 }))
             except websockets.exceptions.ConnectionClosedError:
-                CLIENTS.remove(client)
+                if (sockid in CLIENTS):
+                    CLIENTS.remove(sockid)
+                rich.print(f"[yellow]unsubscribed {str(sockid)[:8]}")
 
         time.sleep(30)
 
@@ -112,15 +114,17 @@ def temp_watcher():
         manager.curr_temperature = temperature
         manager.curr_humidity = humidity
 
-        for client in CLIENTS:
+        for sockid in CLIENTS:
             try:
-                client.send(json.dumps({
+                CLIENTS[sockid].send(json.dumps({
                     'type': 'TEMP',
                     'temperature-int': manager.curr_temperature,
                     'humidity-int': manager.curr_humidity
                 }))
             except websockets.exceptions.ConnectionClosedError:
-                CLIENTS.remove(client)
+                if (sockid in CLIENTS):
+                    CLIENTS.remove(sockid)
+                rich.print(f"[yellow]unsubscribed {str(sockid)[:8]}")
 
         time.sleep(3)
 
@@ -132,7 +136,7 @@ def handle(websocket):
                 payload = json.loads(message)
                 if (payload.get("COMMAND") == "SUBSCRIBE"):
                     rich.print("[yellow]subscribed")
-                    CLIENTS.add(websocket)
+                    CLIENTS.update({websocket.id: websocket})
 
                     websocket.send(json.dumps({
                         'type': 'TEMP',
@@ -148,10 +152,14 @@ def handle(websocket):
                 rich.print(f"[red]unparsable {message}")
 
     except websockets.exceptions.ConnectionClosedError:
-        CLIENTS.remove(websocket)
+        if (websocket.id in CLIENTS):
+            CLIENTS.pop(websocket.id)
+        rich.print(f"[yellow]unsubscribed {str(websocket.id)[:8]}")
         pass
     finally:
-        CLIENTS.remove(websocket)
+        if (websocket.id in CLIENTS):
+            CLIENTS.pop(websocket.id)
+        rich.print(f"[yellow]unsubscribed {str(websocket.id)[:8]}")
 
 
 @click.command()
@@ -165,8 +173,10 @@ def main(server=False):
     threads[-1].start()
 
     if (server):
-        with serve(handle, "0.0.0.0", 8766) as server:
+        with serve(handle, "localhost", 8766) as server:
             server.serve_forever()
+    else:
+        rich.print("[magenta]SERVERLESS MODE")
 
     for thread in threads:
         thread.join()

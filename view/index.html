@@ -15,7 +15,8 @@
             /* background-color: blue; */
             background-color: #2d327d;
             color: #eeeeee;
-            font-size: 20px;
+            font-size: 14px;
+            /* font-size: 16px; */
             font-family: "helvetica", "sans-serif";
             font-weight: bold;
         }
@@ -23,14 +24,19 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            margin-bottom: 20px;
+            margin-bottom: 15px;
 
             /* border: 2px solid red; */
             padding: 2px;
         }
 
+        h2 {
+            margin-top: 0;
+            margin-bottom: 6px;
+        }
+
         tr {
-            height: 32px;
+            height: 1.7rem;
             border-bottom: 1px solid white;
         }
 
@@ -63,6 +69,7 @@
             margin: 0;
             height: 100%;
             box-sizing: border-box;
+            overflow: hidden;
         }
         #main {
             padding: 10px;
@@ -120,19 +127,19 @@
                 </div>
             </div>
 
-            <div v-if="!Object.keys(tables).length" class="loader" style="margin: 40% auto; width: 15vh; height: 15vh"></div>
+            <div v-if="!Object.keys(tables).length" class="loader" style="margin: 38vh auto; width: 15vh; height: 15vh"></div>
 
             <div v-for="(table, key) in tables" :key="tableIndex">
                 <h2>Table {{ table.table_name }}</h2>
                 <table>
                     <thead>
                         <tr>
-                            <th style="width: 80px">Type</th>
-                            <th style="width: 120px">Heure</th>
-                            <th style="width: 50px">Dir</th>
+                            <th style="width: 4rem">Type</th>
+                            <th style="width: 5.5rem">Heure</th>
+                            <th style="width: 2rem">Dir</th>
                             <th style="width: auto">Destination</th>
-                            <th style="width: 50px">Voie</th>
-                            <th style="width: 300px">Remarque</th>
+                            <th style="width: 2.5rem">Voie</th>
+                            <th style="width: 18rem">Remarque</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -313,6 +320,11 @@
             created() {
                 this.tryConnect();
                 this.tryConnectInfo();
+
+                window.addEventListener('beforeunload', () => {
+                    this.connection.close();
+                    this.infoConnect.close();
+                });
             }
         }).mount('#app');
     </script>
