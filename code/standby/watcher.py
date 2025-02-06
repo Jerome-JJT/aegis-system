@@ -28,7 +28,8 @@ load_dotenv()
 class StandbyManager:
     _instance = None
     
-    curr_timer = 1900
+    is_sleeping = True
+    curr_timer = datetime.datetime.now() + datetime.timedelta(minutes=10)
     curr_temperature = 0
     curr_humidity = 0
 
@@ -43,13 +44,12 @@ class StandbyManager:
             cls._instance.curr_temperature = 0
             cls._instance.curr_humidity = 0
             
-            GPIO.cleanup()
 
             GPIO.setmode(GPIO.BOARD)
             GPIO.setup(cls._instance.PIR_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
             GPIO.setup(cls._instance.CLAP_PIN, GPIO.IN)
 #            GPIO.setup(cls._instance.CLAP_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-            GPIO.add_event_detect(cls._instance.CLAP_PIN, GPIO.BOTH, callback=cls._instance.get_clap, bouncetime=300)
+            # GPIO.add_event_detect(cls._instance.CLAP_PIN, GPIO.BOTH, callback=cls._instance.get_clap, bouncetime=300)
 #            GPIO.add_event_callback(cls._instance.CLAP_PIN, cls._instance.get_clap)
     
         return cls._instance
@@ -58,19 +58,17 @@ class StandbyManager:
     def get_pir(self):
         return bool(GPIO.input(self.PIR_PIN))
 
-    def get_clap(self, chan):
+    def get_clap(self):
         val = not(bool(GPIO.input(self.CLAP_PIN)))
-        rich.print("MOVE to", val)
 
-        if (val == True):
-            self.curr_timer = datetime.datetime.now()
+        return val
         #return not(bool(GPIO.input(self.CLAP_PIN)))
 
     def get_temp_humid(self):
         start_time = time.time()
         humidity, temperature = Adafruit_DHT.read_retry(Adafruit_DHT.DHT11, self.TEMP_PIN)
         end_time = time.time()
-        rich.print(start_time, end_time, end_time - start_time)
+        # rich.print("TIME FOR TEMP", start_time, end_time, end_time - start_time)
         return (humidity, temperature)
 
 
@@ -85,16 +83,24 @@ def sleep_watcher():
     manager = StandbyManager()
 
     while True:
-        pir = manager.get_pir()
 
-        if (pir == True):
-            manager.curr_timer = datetime.datetime.now()
+        rich.print("CMP", manager.curr_timer, datetime.datetime.now(), manager.is_sleeping)
+
+        if (manager.curr_timer < datetime.datetime.now() and manager.is_sleeping == False):
+            manager.is_sleeping = True
+            rich.print(f"[magenta]TURNING OFF SCREEN")
+            os.system("sudo /home/admin/aegis-system/services/manage_hdmi.sh off")
+
+        elif (manager.curr_timer > datetime.datetime.now() and manager.is_sleeping == True):
+            manager.is_sleeping = False
+            rich.print(f"[magenta]TURNING ON SCREEN")
+            os.system("sudo /home/admin/aegis-system/services/manage_hdmi.sh on")
 
         for sockid in CLIENTS:
             try:
                 CLIENTS[sockid].send(json.dumps({
                     'type': 'SLEEP',
-                    'timer': manager.curr_timer,
+                    'timer': manager.curr_timer.strftime("%Y-%m-%d, %H:%M:%S")
                 }))
             except websockets.exceptions.ConnectionClosedError:
                 if (sockid in CLIENTS):
@@ -102,6 +108,33 @@ def sleep_watcher():
                 rich.print(f"[yellow]unsubscribed {str(sockid)[:8]}")
 
         time.sleep(30)
+
+
+def pir_watcher():
+    global CLIENTS
+    manager = StandbyManager()
+
+    while True:
+        pir = manager.get_pir()
+
+        if (pir == True):
+            rich.print(f"[magenta]detect PIR")
+            manager.curr_timer = max(manager.curr_timer, datetime.datetime.now() + datetime.timedelta(minutes=10))
+
+        time.sleep(10)
+
+def clap_watcher():
+    global CLIENTS
+    manager = StandbyManager()
+
+    while True:
+        clap = manager.get_clap()
+
+        if (clap == True):
+            rich.print(f"[magenta]detect CLAP")
+            manager.curr_timer = max(manager.curr_timer, datetime.datetime.now() + datetime.timedelta(minutes=10))
+
+        time.sleep(2)
 
 
 def temp_watcher():
@@ -145,7 +178,7 @@ def handle(websocket):
                     }))
                     websocket.send(json.dumps({
                         'type': 'SLEEP',
-                        'timer': manager.curr_timer,
+                        'timer': manager.curr_timer.strftime("%Y-%m-%d, %H:%M:%S"),
                     }))
 
             except json.decoder.JSONDecodeError:
@@ -167,8 +200,12 @@ def handle(websocket):
 def main(server=False):
     threads = []
 
-    # threads.append(threading.Thread(target=sleep_watcher, args=()))
-    # threads[-1].start()
+    threads.append(threading.Thread(target=clap_watcher, args=()))
+    threads[-1].start()
+    threads.append(threading.Thread(target=pir_watcher, args=()))
+    threads[-1].start()
+    threads.append(threading.Thread(target=sleep_watcher, args=()))
+    threads[-1].start()
     threads.append(threading.Thread(target=temp_watcher, args=()))
     threads[-1].start()
 
