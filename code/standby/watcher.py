@@ -11,7 +11,7 @@ try:
     import RPi.GPIO as GPIO
 except ImportError:
     from .mockGPIO import GPIO
-    
+
 try:
     import Adafruit_DHT
 except ImportError:
@@ -22,12 +22,12 @@ from websockets.sync.server import serve
 
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(override=True)
 
 
 class StandbyManager:
     _instance = None
-    
+
     is_sleeping = True
     curr_timer = datetime.datetime.now() + datetime.timedelta(minutes=10)
     curr_temperature = 0
@@ -37,7 +37,7 @@ class StandbyManager:
     PIR_PIN = int(os.getenv('PIR_PIN'))
     CLAP_PIN = int(os.getenv('CLAP_PIN'))
     TEMP_PIN = int(os.getenv('TEMP_PIN'))
-    
+
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(StandbyManager, cls).__new__(cls)
@@ -46,7 +46,8 @@ class StandbyManager:
             
 
             GPIO.setmode(GPIO.BOARD)
-            GPIO.setup(cls._instance.PIR_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+#            GPIO.setup(cls._instance.PIR_PIN, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+            GPIO.setup(cls._instance.PIR_PIN, GPIO.IN)
             GPIO.setup(cls._instance.CLAP_PIN, GPIO.IN)
 #            GPIO.setup(cls._instance.CLAP_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
             # GPIO.add_event_detect(cls._instance.CLAP_PIN, GPIO.BOTH, callback=cls._instance.get_clap, bouncetime=300)
@@ -56,11 +57,16 @@ class StandbyManager:
     
 
     def get_pir(self):
-        return bool(GPIO.input(self.PIR_PIN))
+#        rich.print(self.PIR_PIN)
+        val = bool(GPIO.input(self.PIR_PIN))
+#        rich.print("PIR VALUE", val)
+        return val
 
     def get_clap(self):
+#        rich.print(self.CLAP_PIN)
         val = not(bool(GPIO.input(self.CLAP_PIN)))
-
+#        if (val):
+#        	rich.print("CLAP VALUE", val)
         return val
         #return not(bool(GPIO.input(self.CLAP_PIN)))
 
@@ -68,7 +74,7 @@ class StandbyManager:
         start_time = time.time()
         humidity, temperature = Adafruit_DHT.read_retry(Adafruit_DHT.DHT11, self.TEMP_PIN)
         end_time = time.time()
-        # rich.print("TIME FOR TEMP", start_time, end_time, end_time - start_time)
+        rich.print("TIME FOR TEMP", start_time, end_time, end_time - start_time, humidity, temperature)
         return (humidity, temperature)
 
 
@@ -121,7 +127,7 @@ def pir_watcher():
             rich.print(f"[magenta]detect PIR")
             manager.curr_timer = max(manager.curr_timer, datetime.datetime.now() + datetime.timedelta(minutes=10))
 
-        time.sleep(10)
+        time.sleep(0.4)
 
 def clap_watcher():
     global CLIENTS
@@ -134,7 +140,7 @@ def clap_watcher():
             rich.print(f"[magenta]detect CLAP")
             manager.curr_timer = max(manager.curr_timer, datetime.datetime.now() + datetime.timedelta(minutes=10))
 
-        time.sleep(2)
+        time.sleep(1)
 
 
 def temp_watcher():
@@ -200,8 +206,8 @@ def handle(websocket):
 def main(server=False):
     threads = []
 
-    threads.append(threading.Thread(target=clap_watcher, args=()))
-    threads[-1].start()
+#    threads.append(threading.Thread(target=clap_watcher, args=()))
+#    threads[-1].start()
     threads.append(threading.Thread(target=pir_watcher, args=()))
     threads[-1].start()
     threads.append(threading.Thread(target=sleep_watcher, args=()))
