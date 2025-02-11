@@ -40,7 +40,8 @@ class ConfigManager():
             try:
                 with open(cls._instance.CONFIG_FILE, "r") as infile:
                     conf = json.load(infile)
-            except:
+            except Exception as e:
+                print("ERROR LOADING CONF", cls._instance.CONFIG_FILE, e)
                 pass
             
             try:

@@ -54,7 +54,7 @@ def handle(websocket):
 
 
 
-def notify(changes, infos):
+def notify(changes, infos, conf_name):
     embed = {
         'message_type': 'embed',
         # embed["thumbnail"] = f'{fetched["avatar_url"]}',
@@ -66,7 +66,7 @@ def notify(changes, infos):
     #     cat = "train"
 
 
-    embed['title'] = f'`{infos["start"]["name"]}` to `{infos["to"]}` at {infos["start"]["time"][11:16]}\n'
+    embed['title'] = f'{conf_name}: `{infos["start"]["name"]}` to `{infos["to"]}` at {infos["start"]["time"][11:16]}\n'
     embed['title'] += f'{infos["start"]["delay"]} {pluralize(infos["start"]["delay"], "minute", "minutes")} delay'
     
     embed['fields'] = dict({
@@ -146,7 +146,7 @@ def check_changes(elem, conf):
             time_compare <= conf.get("notify_end")
         )
     )):
-        notify(changes, elem)
+        notify(changes, elem, conf.get("name") or "")
 
     buffers[conf_id][elem_id] = {
         **elem,

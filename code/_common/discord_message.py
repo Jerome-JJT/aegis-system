@@ -6,6 +6,7 @@ import sys
 import json
 import requests
 import rich
+import time
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -95,10 +96,21 @@ def send_discord_message(payload):
 
         if response.status_code != 204:
             rich.print(f'Send error')
-            raise Exception(f'Send error', response.text)
+            if ("retry_after" in response.json()):
+                rich.print("Wait", response.json()["retry_after"] * 3)
+                time.sleep(response.json()["retry_after"] * 3)
+
+                response = requests.post(os.getenv('DISCORD_MSGS'), data=json.dumps(payload), headers=headers)
+
+            else:
+                raise Exception(f'Send error', response.text)
 
     except Exception as e:
         rich.print(f'Error {str(e)}')
 
 if __name__ == '__main__':
-    send_discord_message(" ".join(sys.argv[1:]))
+    if (len(sys.argv) >= 2 and sys.argv[1] == "stdin"):
+         for line in sys.stdin:
+            send_discord_message(line)
+    else:
+        send_discord_message(" ".join(sys.argv[1:]))
