@@ -32,7 +32,7 @@
 
         h2 {
             margin-top: 0;
-            margin-bottom: 6px;
+            margin-bottom: 0.3rem;
         }
 
         tr {
@@ -43,7 +43,8 @@
         /* td:first-child {
         } */
 
-        thead tr, tr:nth-child(2n+2) {
+        thead tr,
+        tr:nth-child(2n+2) {
             background-color: #4d529d;
         }
 
@@ -65,25 +66,31 @@
             text-align: left;
         }
 
-        html, body, body > div, body > div > div {
+        html,
+        body,
+        body>div,
+        body>div>div {
             margin: 0;
             height: 100%;
             box-sizing: border-box;
             overflow: hidden;
         }
+
         #main {
             padding: 10px;
         }
+
         .danger {
             border: 4px solid orange;
         }
+
         .hidden {
             display: none !important;
         }
 
         #infobox {
-            position: static;
-            float: right;
+            position: absolute;
+            right: 0;
             background-color: rgba(255, 255, 255, 0.2);
 
             border: 2px solid red;
@@ -96,10 +103,15 @@
             gap: 50px;
             grid-template-columns: auto auto auto;
         }
-        #infobox > div {
-            display: grid; 
-            grid-template: auto auto / auto auto; 
+
+        #infobox>div {
+            display: grid;
+            grid-template: auto auto / auto auto;
             column-gap: 10px;
+        }
+
+        .infobox_spacing {
+            margin-top: 25px;
         }
     </style>
 </head>
@@ -127,9 +139,10 @@
                 </div>
             </div>
 
-            <div v-if="!Object.keys(tables).length" class="loader" style="margin: 38vh auto; width: 15vh; height: 15vh"></div>
+            <div v-if="!Object.keys(tables).length" class="loader" style="margin: 38vh auto; width: 15vh; height: 15vh">
+            </div>
 
-            <div v-for="(table, key) in tables" :key="tableIndex">
+            <div v-for="(table, tableIndex) in orderedTables" :key="tableIndex" :class="{ infobox_spacing: this.infoConnected }">
                 <h2>Table {{ table.table_name }}</h2>
                 <table>
                     <thead>
@@ -147,7 +160,7 @@
                             <td>
                                 <div>{{ train.category }} {{ train.number }}</div>
                             </td>
-                            <td><time-component :time="train.start.time" :pronotime="train.start.prono_time"/></td>
+                            <td><time-component :time="train.start.time" :pronotime="train.start.prono_time" /></td>
                             <td>{{ train.dir }}</td>
                             <td>{{ train.to }}</td>
                             <td style="text-align: center;">{{ train.start.platform ?? '-' }}</td>
@@ -196,6 +209,13 @@
                     infoConnected: false,
                     tables: {}
                 };
+            },
+            computed: {
+                orderedTables: function () {
+                    return Object.values(this.tables).sort((a, b) => {
+                        return a.corder - b.corder
+                    });
+                }
             },
             methods: {
                 pluralize(number, singular = "", plural = "s") {
@@ -284,6 +304,7 @@
                         if (!Object.keys(this.tables).includes(data["id"])) {
                             this.tables[data["id"]] = {
                                 table_name: data["name"],
+                                corder: data["corder"],
                                 trains: [],
                             }
                         }

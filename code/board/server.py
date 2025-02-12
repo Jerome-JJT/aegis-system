@@ -33,11 +33,13 @@ def handle(websocket):
 
                     for sub_buffer in buffers.keys():
                         check = next(filter(lambda x: x["id"] == sub_buffer, conf_manager.check_list))
-                        websocket.send(json.dumps({
-                            'id': sub_buffer, 
-                            'name': check.get('name') or '', 
-                            'elems': list(buffers[sub_buffer].values()) or []
-                        }))
+                        if (check.get('display') != None and check.get('display') != False):
+                            websocket.send(json.dumps({
+                                'id': sub_buffer, 
+                                'name': check.get('name') or '', 
+                                'corder': check.get('display') or 50,
+                                'elems': list(buffers[sub_buffer].values()) or []
+                            }))
 
             except json.decoder.JSONDecodeError:
                 rich.print(f"[red]unparsable {message}")
@@ -148,10 +150,7 @@ def check_changes(elem, conf):
     )):
         notify(changes, elem, conf.get("name") or "")
 
-    buffers[conf_id][elem_id] = {
-        **elem,
-        "last_update": round(datetime.datetime.timestamp(datetime.datetime.now()))
-    }
+    buffers[conf_id][elem_id]["last_update"] = round(datetime.datetime.timestamp(datetime.datetime.now()))
 
 def update(check):
     conf_id = check["id"]
@@ -164,12 +163,13 @@ def update(check):
     elif (check.get('type') == 'stationboard'): # period start and period end
         res = station_search(q=check.get('query'), l=check.get('checks') or 5)
 
-    if (check.get('display') == True):
+    if (check.get('display') != None and check.get('display') != False):
         for sockid in CLIENTS:
             try:
                 CLIENTS[sockid].send(json.dumps({
                     'id': conf_id, 
-                    'name': check.get('name'), 
+                    'name': check.get('name') or '',
+                    'corder': check.get('display') or 50,
                     'elems': res
                 }))
             except websockets.exceptions.ConnectionClosedError:
