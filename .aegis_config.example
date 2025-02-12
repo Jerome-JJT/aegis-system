@@ -7,7 +7,7 @@
             "query": "station=Renens, Village",
             "min_delay": 2,
             "checks": 5,
-            "display": true,
+            "display": 30,
             "notify_start": "18:45:00",
             "notify_end": "18:55",
             "check_frequency": 30
@@ -19,7 +19,7 @@
             "query": "station=Renens",
             "min_delay": 2,
             "checks": 30,
-            "display": true,
+            "display": 50,
             "notify_start": null,
             "notify_end": null,
             "check_frequency": 120
