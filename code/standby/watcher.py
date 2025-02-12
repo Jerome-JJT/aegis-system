@@ -95,12 +95,12 @@ def sleep_watcher():
         if (manager.curr_timer < datetime.datetime.now() and manager.is_sleeping == False):
             manager.is_sleeping = True
             rich.print(f"[magenta]TURNING OFF SCREEN", datetime.datetime.now())
-            os.system("sudo /home/admin/aegis-system/services/manage_hdmi.sh off")
+            os.system("/usr/bin/sudo /home/admin/aegis-system/services/manage_hdmi.sh off")
 
         elif (manager.curr_timer > datetime.datetime.now() and manager.is_sleeping == True):
             manager.is_sleeping = False
             rich.print(f"[magenta]TURNING ON SCREEN", datetime.datetime.now())
-            os.system("sudo /home/admin/aegis-system/services/manage_hdmi.sh on")
+            os.system("/usr/bin/sudo /home/admin/aegis-system/services/manage_hdmi.sh on")
 
         for sockid in CLIENTS:
             try:
