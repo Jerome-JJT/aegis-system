@@ -94,12 +94,12 @@ def sleep_watcher():
 
         if (manager.curr_timer < datetime.datetime.now() and manager.is_sleeping == False):
             manager.is_sleeping = True
-            rich.print(f"[magenta]TURNING OFF SCREEN")
+            rich.print(f"[magenta]TURNING OFF SCREEN", datetime.datetime.now())
             os.system("sudo /home/admin/aegis-system/services/manage_hdmi.sh off")
 
         elif (manager.curr_timer > datetime.datetime.now() and manager.is_sleeping == True):
             manager.is_sleeping = False
-            rich.print(f"[magenta]TURNING ON SCREEN")
+            rich.print(f"[magenta]TURNING ON SCREEN", datetime.datetime.now())
             os.system("sudo /home/admin/aegis-system/services/manage_hdmi.sh on")
 
         for sockid in CLIENTS:
@@ -150,20 +150,21 @@ def temp_watcher():
     while True:
         humidity, temperature = manager.get_temp_humid()
 
-        manager.curr_temperature = temperature
-        manager.curr_humidity = humidity
+        if (temperature != None and humidity != None):
+            manager.curr_temperature = temperature
+            manager.curr_humidity = humidity
 
-        for sockid in CLIENTS:
-            try:
-                CLIENTS[sockid].send(json.dumps({
-                    'type': 'TEMP',
-                    'temperature-int': manager.curr_temperature,
-                    'humidity-int': manager.curr_humidity
-                }))
-            except websockets.exceptions.ConnectionClosedError:
-                if (sockid in CLIENTS):
-                    CLIENTS.remove(sockid)
-                rich.print(f"[yellow]unsubscribed {str(sockid)[:8]}")
+            for sockid in CLIENTS:
+                try:
+                    CLIENTS[sockid].send(json.dumps({
+                        'type': 'TEMP',
+                        'temperature-int': manager.curr_temperature,
+                        'humidity-int': manager.curr_humidity
+                    }))
+                except websockets.exceptions.ConnectionClosedError:
+                    if (sockid in CLIENTS):
+                        CLIENTS.remove(sockid)
+                    rich.print(f"[yellow]unsubscribed {str(sockid)[:8]}")
 
         time.sleep(3)
 
