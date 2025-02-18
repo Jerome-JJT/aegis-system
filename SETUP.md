@@ -18,6 +18,16 @@ install Debian GNU/Linux 12 (bookworm)  (/etc/os-release)
 `cd /etc/NetworkManager/system-connections`<br>
 `ll`
 
+#### Sets
+`sudo apt update`<br>
+`sudo apt upgrade`<br>
+`sudo apt install midori`<br>
+`crontab -e`<br>
+Add `*/5 * * * *  cd /home/admin/aegis-system; ./env/bin/python ./code/_common/discord_message.py "$(date) $(hostname -I) $(iwgetid)"`<br>
+`sudo nano /etc/rc.local`<br>
+Add `cd /home/admin/aegis-system; ./env/bin/python ./code/_common/discord_message.py "STARTUP $(date) $(hostname -I) $(iwgetid)"`<br>
+
+
 #### Services
 `mkdir -p ~/.config/systemd`<br>
 `ln -s ~/aegis-system/services ~/.config/systemd/user`<br>
