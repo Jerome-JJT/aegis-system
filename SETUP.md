@@ -6,8 +6,9 @@ install Debian GNU/Linux 12 (bookworm)  (/etc/os-release)
 `deploy key w/ edit`<br>
 `git clone project`<br>
 `python -m venv env`<br>
-`source bag/bin/activate`<br>
+`source env/bin/activate`<br>
 `pip install -r requirements.txt`<br>
+`pip install Adafruit_Python_DHT --install-option="--force-pi"`<br>
 `.env`<br>
 
 #### Wifi prod
@@ -16,3 +17,14 @@ install Debian GNU/Linux 12 (bookworm)  (/etc/os-release)
 <br>
 `cd /etc/NetworkManager/system-connections`<br>
 `ll`
+
+#### Services
+`mkdir -p ~/.config/systemd`<br>
+`ln -s ~/aegis-system/services ~/.config/systemd/user`<br>
+`visudo`<br>
+Add `admin ALL=(ALL) NOPASSWD: /home/admin/aegis-system/services/manage_hdmi.sh`<br>
+
+`systemctl --user enable server`<br>
+`systemctl --user enable watcher`<br>
+`systemctl --user enable nginx`<br>
+`systemctl --user enable browser`<br>
