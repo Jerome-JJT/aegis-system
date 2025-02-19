@@ -49,9 +49,9 @@ class StandbyManager:
 #            GPIO.setup(cls._instance.PIR_PIN, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
             GPIO.setup(cls._instance.PIR_PIN, GPIO.IN)
             GPIO.setup(cls._instance.CLAP_PIN, GPIO.IN)
-#            GPIO.setup(cls._instance.CLAP_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+        #    GPIO.setup(cls._instance.CLAP_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
             # GPIO.add_event_detect(cls._instance.CLAP_PIN, GPIO.BOTH, callback=cls._instance.get_clap, bouncetime=300)
-#            GPIO.add_event_callback(cls._instance.CLAP_PIN, cls._instance.get_clap)
+            GPIO.add_event_detect(cls._instance.CLAP_PIN, GPIO.HIGH, cls._instance.clap_cb)
     
         return cls._instance
     
@@ -61,6 +61,13 @@ class StandbyManager:
         val = bool(GPIO.input(self.PIR_PIN))
 #        rich.print("PIR VALUE", val)
         return val
+    
+    def clap_cb(self, channel):
+
+        # val = bool(GPIO.input(channel))
+        
+        # if (val == True):
+        manager.curr_timer = max(manager.curr_timer, datetime.datetime.now() + datetime.timedelta(minutes=10))
 
     def get_clap(self):
 #        rich.print(self.CLAP_PIN)
@@ -87,6 +94,7 @@ manager = StandbyManager()
 def sleep_watcher():
     global CLIENTS
     manager = StandbyManager()
+    old_curr_timer = None
 
     while True:
 
@@ -102,18 +110,21 @@ def sleep_watcher():
             rich.print(f"[magenta]TURNING ON SCREEN", datetime.datetime.now())
             os.system("/usr/bin/sudo /home/admin/aegis-system/services/manage_hdmi.sh on")
 
-        for sockid in CLIENTS:
-            try:
-                CLIENTS[sockid].send(json.dumps({
-                    'type': 'SLEEP',
-                    'timer': manager.curr_timer.strftime("%Y-%m-%d, %H:%M:%S")
-                }))
-            except websockets.exceptions.ConnectionClosedError:
-                if (sockid in CLIENTS):
-                    CLIENTS.remove(sockid)
-                rich.print(f"[yellow]unsubscribed {str(sockid)[:8]}")
+        if (old_curr_timer != manager.curr_timer):
+            old_curr_timer = manager.curr_timer
 
-        time.sleep(30)
+            for sockid in CLIENTS:
+                try:
+                    CLIENTS[sockid].send(json.dumps({
+                        'type': 'SLEEP',
+                        'timer': manager.curr_timer.strftime("%Y-%m-%d, %H:%M:%S")
+                    }))
+                except websockets.exceptions.ConnectionClosedError:
+                    if (sockid in CLIENTS):
+                        CLIENTS.remove(sockid)
+                    rich.print(f"[yellow]unsubscribed {str(sockid)[:8]}")
+
+        time.sleep(3)
 
 
 def pir_watcher():
