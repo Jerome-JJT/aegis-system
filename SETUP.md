@@ -45,3 +45,31 @@ Add `admin ALL=(ALL) NOPASSWD: /home/admin/aegis-system/services/manage_hdmi.sh`
 `systemctl --user enable watcher`<br>
 `systemctl --user enable nginx`<br>
 `systemctl --user enable browser`<br>
+
+
+#### Reconnect wifi auto
+`https://raspberrypi.stackexchange.com/questions/71626/automatically-connect-pi-zero-w-to-wlan-after-lost-connection`<br>
+As root <br>
+```sh
+#!/bin/bash
+
+# The IP for the server you wish to ping. I suggest an internal gateway.
+SERVER=192.168.1.1
+
+# Only send two pings, sending output to /dev/null
+ping -c2 ${SERVER} > /dev/null
+echo "Run $(date)"
+
+# If the return code from ping ($?) is not 0 (meaning there was an error)
+if [ $? != 0 ]
+then
+    echo "Restart wlan0"
+    # Restart the wireless interface
+    ip link set wlan0 down
+    sleep 1
+    ip link set wlan0 up
+fi
+```
+<br>
+/etc/crontab `*/5 * * * * /root/wifi_rebooter.sh >> /root/log.txt 2>> /root/log.txt`<br>
+
