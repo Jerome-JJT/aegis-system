@@ -8,5 +8,4 @@ click
 
 keyboard
 
-Adafruit_Python_DHT
 RPi.lGPIO
