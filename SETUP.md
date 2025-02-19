@@ -32,6 +32,8 @@ Add `cd /home/admin/aegis-system; ./env/bin/python ./code/_common/discord_messag
 
 
 #### Services
+`sudo mkdir -p /var/log/aegis`<br>
+`sudo chown -R admin:admin /var/log/aegis`<br>
 `mkdir -p ~/.config/systemd`<br>
 `ln -s ~/aegis-system/services ~/.config/systemd/user`<br>
 `visudo`<br>
