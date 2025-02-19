@@ -233,8 +233,8 @@
                 },
 
                 tryConnect(timeout = 1000) {
-                    this.connection = new WebSocket("//localhost:8765");
-                    //this.connection = new WebSocket(`//${window.location.hostname}:8765`);
+                    //this.connection = new WebSocket("//localhost:8765");
+                    this.connection = new WebSocket(`//${window.location.hostname}:8765`);
 
                     this.connection.onmessage = (event) => {
                         try {

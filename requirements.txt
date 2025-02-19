@@ -9,4 +9,4 @@ click
 keyboard
 
 Adafruit_Python_DHT
-RPi.GPIO
+RPi.lGPIO
