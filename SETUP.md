@@ -21,7 +21,10 @@ install Debian GNU/Linux 12 (bookworm)  (/etc/os-release)
 #### Sets
 `sudo apt update`<br>
 `sudo apt upgrade`<br>
-`sudo apt install midori`<br>
+~~`sudo apt install midori`~~<br>
+`wget http://ftp.fr.debian.org/debian/pool/main/m/midori/midori_7.0-2.1_armhf.deb`<br>
+`sudo dpkg -i midori_XXXXX.deb`<br>
+`sudo apt -f install`<br>
 `crontab -e`<br>
 Add `*/5 * * * *  cd /home/admin/aegis-system; ./env/bin/python ./code/_common/discord_message.py "$(date) $(hostname -I) $(iwgetid)"`<br>
 `sudo nano /etc/rc.local`<br>
