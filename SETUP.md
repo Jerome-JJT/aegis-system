@@ -10,6 +10,7 @@ install Debian GNU/Linux 12 (bookworm)  (/etc/os-release)
 `pip install -r requirements.txt`<br>
 `pip install Adafruit_Python_DHT --install-option="--force-pi"`<br>
 `.env`<br>
+`.aegis_config`<br>
 
 #### Wifi prod
 `sudo nmcli dev wifi rescan`<br>
@@ -22,9 +23,10 @@ install Debian GNU/Linux 12 (bookworm)  (/etc/os-release)
 `sudo apt update`<br>
 `sudo apt upgrade`<br>
 ~~`sudo apt install midori`~~<br>
-`wget http://ftp.fr.debian.org/debian/pool/main/m/midori/midori_7.0-2.1_armhf.deb`<br>
-`sudo dpkg -i midori_XXXXX.deb`<br>
-`sudo apt -f install`<br>
+~~`wget http://ftp.fr.debian.org/debian/pool/main/m/midori/midori_7.0-2.1_armhf.deb`~~<br>
+~~`sudo dpkg -i midori_XXXXX.deb`~~<br>
+~~`sudo apt -f install`~~<br>
+`sudo apt install epiphany-browser`<br>
 `crontab -e`<br>
 Add `*/5 * * * *  cd /home/admin/aegis-system; ./env/bin/python ./code/_common/discord_message.py "$(date) $(hostname -I) $(iwgetid)"`<br>
 `sudo nano /etc/rc.local`<br>
