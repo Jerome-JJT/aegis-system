@@ -85,7 +85,7 @@ class StandbyManager:
         return val
 
     def clap_cb(self, channel):
-        rich.print("[magenta]CLAP CB RISING")
+        rich.print("[magenta] {datetime.datetime.now()} CLAP CB RISING")
 
         manager.curr_timer = max(manager.curr_timer, datetime.datetime.now() + datetime.timedelta(minutes=10))
 
@@ -221,7 +221,7 @@ def handle(websocket):
 
                     websocket.send(json.dumps({
                         'type': 'TEMP',
-                        'temperature-in': manager.captors['in']['temperature'],
+                        'temperature-int': manager.captors['int']['temperature'],
                         'humidity-int': manager.captors['int']['humidity'],
                         'temperature-ext': manager.captors['ext']['temperature'],
                         'humidity-ext': manager.captors['ext']['humidity']
