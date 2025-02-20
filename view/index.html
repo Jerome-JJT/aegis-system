@@ -323,8 +323,8 @@
                         if (typ == "TEMP") {
                             document.getElementById("info-int-temp").textContent = `${data["temperature-int"]}°C`;
                             document.getElementById("info-int-humid").textContent = `${data["humidity-int"]} %`;
-                            document.getElementById("info-ext-temp").textContent = `${data["temperature-int"]}°C`;
-                            document.getElementById("info-ext-humid").textContent = `${data["humidity-int"]} %`;
+                            document.getElementById("info-ext-temp").textContent = `${data["temperature-ext"]}°C`;
+                            document.getElementById("info-ext-humid").textContent = `${data["humidity-ext"]} %`;
                         }
                         else if (typ == "SLEEP") {
                             document.getElementById("info-sleep").textContent = `${data["timer"]}`;
