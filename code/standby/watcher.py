@@ -12,10 +12,10 @@ try:
 except ImportError:
     from .mockGPIO import GPIO
 
-try:
-    import Adafruit_DHT
-except ImportError:
-    from .mockAdafruit_DHT import Adafruit_DHT
+#try:
+from code._common.dht import DHT
+#except ImportError:
+#    from .mockAdafruit_DHT import Adafruit_DHT
 
 import websockets
 from websockets.sync.server import serve
@@ -30,61 +30,88 @@ class StandbyManager:
 
     is_sleeping = True
     curr_timer = datetime.datetime.now() + datetime.timedelta(minutes=10)
+
+    captors = {
+        "int": {
+            "dht": None,
+            "temperature": 0,
+            "humidity": 0,
+        },
+        "ext": {
+            "dht": None,
+            "temperature": 0,
+            "humidity": 0,
+        }
+
+    }
     curr_temperature = 0
     curr_humidity = 0
 
     #passive infrared
     PIR_PIN = int(os.getenv('PIR_PIN'))
     CLAP_PIN = int(os.getenv('CLAP_PIN'))
-    TEMP_PIN = int(os.getenv('TEMP_PIN'))
+    TEMP_INT_PIN = int(os.getenv('TEMP_INT_PIN'))
+    TEMP_EXT_PIN = int(os.getenv('TEMP_EXT_PIN'))
 
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super(StandbyManager, cls).__new__(cls)
-            cls._instance.curr_temperature = 0
-            cls._instance.curr_humidity = 0
-            
 
             GPIO.setmode(GPIO.BOARD)
-#            GPIO.setup(cls._instance.PIR_PIN, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
-            GPIO.setup(cls._instance.PIR_PIN, GPIO.IN)
-            GPIO.setup(cls._instance.CLAP_PIN, GPIO.IN)
+
+            if (cls._instance.TEMP_INT_PIN > 0):
+                cls._instance.captors["int"]["dht"] = DHT(cls._instance.TEMP_INT_PIN, True)
+
+            if (cls._instance.TEMP_EXT_PIN > 0):
+                cls._instance.captors["ext"]["dht"] = DHT(cls._instance.TEMP_EXT_PIN, True)
+
+            if (cls._instance.PIR_PIN > 0):
+                GPIO.setup(cls._instance.PIR_PIN, GPIO.IN)
+
+            if (cls._instance.CLAP_PIN > 0):
+                GPIO.setup(cls._instance.CLAP_PIN, GPIO.IN)
+                GPIO.add_event_detect(cls._instance.CLAP_PIN, GPIO.RISING, cls._instance.clap_cb)
+
         #    GPIO.setup(cls._instance.CLAP_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
             # GPIO.add_event_detect(cls._instance.CLAP_PIN, GPIO.BOTH, callback=cls._instance.get_clap, bouncetime=300)
-            GPIO.add_event_detect(cls._instance.CLAP_PIN, GPIO.HIGH, cls._instance.clap_cb)
-    
+
         return cls._instance
-    
+
 
     def get_pir(self):
 #        rich.print(self.PIR_PIN)
         val = bool(GPIO.input(self.PIR_PIN))
 #        rich.print("PIR VALUE", val)
         return val
-    
-    def clap_cb(self, channel):
 
-        # val = bool(GPIO.input(channel))
-        
-        # if (val == True):
+    def clap_cb(self, channel):
+        rich.print("[magenta]CLAP CB RISING")
+
         manager.curr_timer = max(manager.curr_timer, datetime.datetime.now() + datetime.timedelta(minutes=10))
 
     def get_clap(self):
 #        rich.print(self.CLAP_PIN)
         val = not(bool(GPIO.input(self.CLAP_PIN)))
-#        if (val):
-#        	rich.print("CLAP VALUE", val)
         return val
-        #return not(bool(GPIO.input(self.CLAP_PIN)))
 
-    def get_temp_humid(self):
+    def get_temp_humid(self, dht):
         start_time = time.time()
-        humidity, temperature = Adafruit_DHT.read_retry(Adafruit_DHT.DHT11, self.TEMP_PIN)
+
+        res = dht.read()
+        for i in range(0, 15):
+            if  (res.is_valid()):
+                break
+            else:
+                time.sleep(2)
+                res = dht.read()
+
         end_time = time.time()
-        rich.print("TIME FOR TEMP", start_time, end_time, end_time - start_time, humidity, temperature)
-        return (humidity, temperature)
+        rich.print("TIME FOR TEMP", start_time, end_time, end_time - start_time, res.is_valid(), res.humidity, res.temperature)
 
-
+        if (res.is_valid()):
+            return (res.humidity, res.temperature)
+        else:
+            return (None, None)
 
 
 CLIENTS = dict()
@@ -98,7 +125,7 @@ def sleep_watcher():
 
     while True:
 
-        rich.print("CMP", manager.curr_timer, datetime.datetime.now(), manager.is_sleeping)
+#        rich.print("CMP", manager.curr_timer, datetime.datetime.now(), manager.is_sleeping)
 
         if (manager.curr_timer < datetime.datetime.now() and manager.is_sleeping == False):
             manager.is_sleeping = True
@@ -130,6 +157,7 @@ def sleep_watcher():
 def pir_watcher():
     global CLIENTS
     manager = StandbyManager()
+    rich.print(f"[magenta]PIR watcher loaded")
 
     while True:
         pir = manager.get_pir()
@@ -143,6 +171,7 @@ def pir_watcher():
 def clap_watcher():
     global CLIENTS
     manager = StandbyManager()
+    rich.print(f"[magenta]CLAP watcher loaded")
 
     while True:
         clap = manager.get_clap()
@@ -154,23 +183,24 @@ def clap_watcher():
         time.sleep(1)
 
 
-def temp_watcher():
+def temp_watcher(place = 'int'):
     global CLIENTS
     manager = StandbyManager()
+    rich.print(f"[magenta]TEMP {place} watcher loaded")
 
     while True:
-        humidity, temperature = manager.get_temp_humid()
+        humidity, temperature = manager.get_temp_humid(manager.captors[place]['dht'])
 
         if (temperature != None and humidity != None):
-            manager.curr_temperature = temperature
-            manager.curr_humidity = humidity
+            manager.captors[place]['temperature'] = temperature
+            manager.captors[place]['humidity'] = humidity
 
             for sockid in CLIENTS:
                 try:
                     CLIENTS[sockid].send(json.dumps({
                         'type': 'TEMP',
-                        'temperature-int': manager.curr_temperature,
-                        'humidity-int': manager.curr_humidity
+                        f'temperature-{place}': manager.captors[place]['temperature'],
+                        f'humidity-{place}': manager.captors[place]['humidity']
                     }))
                 except websockets.exceptions.ConnectionClosedError:
                     if (sockid in CLIENTS):
@@ -191,8 +221,10 @@ def handle(websocket):
 
                     websocket.send(json.dumps({
                         'type': 'TEMP',
-                        'temperature-int': manager.curr_temperature,
-                        'humidity-int': manager.curr_humidity
+                        'temperature-in': manager.captors['in']['temperature'],
+                        'humidity-int': manager.captors['int']['humidity'],
+                        'temperature-ext': manager.captors['ext']['temperature'],
+                        'humidity-ext': manager.captors['ext']['humidity']
                     }))
                     websocket.send(json.dumps({
                         'type': 'SLEEP',
@@ -220,12 +252,20 @@ def main(server=False):
 
 #    threads.append(threading.Thread(target=clap_watcher, args=()))
 #    threads[-1].start()
-    threads.append(threading.Thread(target=pir_watcher, args=()))
-    threads[-1].start()
+
     threads.append(threading.Thread(target=sleep_watcher, args=()))
     threads[-1].start()
-    threads.append(threading.Thread(target=temp_watcher, args=()))
-    threads[-1].start()
+
+    if (manager.PIR_PIN > 0):
+        threads.append(threading.Thread(target=pir_watcher, args=()))
+        threads[-1].start()
+
+    if (manager.TEMP_INT_PIN > 0):
+        threads.append(threading.Thread(target=temp_watcher, args=('int',)))
+        threads[-1].start()
+    if (manager.TEMP_EXT_PIN > 0):
+        threads.append(threading.Thread(target=temp_watcher, args=('ext',)))
+        threads[-1].start()
 
     if (server):
         with serve(handle, "localhost", 8766) as server:
@@ -238,11 +278,6 @@ def main(server=False):
 
 if __name__ == '__main__':
     main()
-
-#     rich.print("hello")
-
-#     oldval = False
-    oldcnt = 0
 
     while (True):
 #         res = manager.get_pir()
