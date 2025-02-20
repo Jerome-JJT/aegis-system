@@ -59,7 +59,7 @@
         }
 
         th:nth-child(2), td:nth-child(2) {
-            min-width: 6rem; max-width: 6rem;
+            min-width: 5rem; max-width: 5rem;
         }
 
         th:nth-child(3), td:nth-child(3) {
@@ -76,13 +76,13 @@
 
         th:nth-child(6), td:nth-child(6) {
             min-width: 2.8rem; max-width: 2.8rem;
-            font-size: 30px;
+            font-size: 0.8rem;
         }
 
         td:nth-child(1) div {
             background-color: white;
             color: black;
-            font-size: 30px;
+            font-size: 0.8rem;
 
             padding-left: 1px;
             padding-top: 1px;
@@ -97,6 +97,11 @@
 
         td:nth-child(6) {
             color: yellow;
+        }
+
+        .timer {
+            float: right;
+            margin-right: 15px;
         }
 
         html,
@@ -215,6 +220,14 @@
                 { hour: '2-digit', minute: '2-digit' }
             ).format(date);
         };
+        const diffTime = (time, now = null) => {
+            now = now === null ? new Date() : now;
+            const timeDifference = time - now;
+
+            const minutesUntil = Math.floor(timeDifference / (1000 * 60));
+
+            return `${minutesUntil}'`;
+        };
 
         Vue.createApp({
             components: {
@@ -223,13 +236,17 @@
                     computed: {
                         templateToUse() {
                             if (this.pronotime !== undefined && this.pronotime !== null && this.time !== this.pronotime) {
-                                return `
-                                    <del>${parseTime(this.time)}</del> 
-                                    <span style="color: yellow;">${parseTime(this.pronotime)}</span>
-                                `;
+                                return [
+                                    `<del style="font-size: 0.5rem;">${parseTime(this.time)}</del>`,
+                                    `<span style="color: yellow;">${parseTime(this.pronotime)}</span>`,
+                                    `<span style="color: yellow;" class="timer" data-time='${this.pronotime}''> ${diffTime(new Date(this.pronotime))}</span>`
+                                ].join('');
                             }
                             else {
-                                return `<span>${parseTime(this.time)}</span>`
+                                return [
+                                    `<span>${parseTime(this.time)}</span>`,
+                                    `<span class="timer" data-time='${this.time}''> ${diffTime(new Date(this.time))}</span>`
+                                ].join('');
                             }
                         }
                     },
@@ -253,6 +270,7 @@
                 }
             },
             methods: {
+                
                 pluralize(number, singular = "", plural = "s") {
                     return (number == 1 ? singular : plural);
                 },
@@ -381,6 +399,16 @@
                     this.connection.close();
                     this.infoConnect.close();
                 });
+
+                setInterval(() => {
+                    const timers = document.getElementsByClassName("timer");
+                    const now = new Date();
+
+                    for (let i = 0; i < timers.length; i++) {
+                        const timerDeadline = timers[i].attributes["data-time"].value;
+                        timers[i].textContent = diffTime(new Date(timerDeadline), now);
+                    }
+                }, 10000)
             }
         }).mount('#app');
     </script>
