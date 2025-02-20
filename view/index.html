@@ -321,10 +321,10 @@
                         typ = data["type"];
 
                         if (typ == "TEMP") {
-                            document.getElementById("info-int-temp").textContent = `${data["temperature-int"]}°C`;
-                            document.getElementById("info-int-humid").textContent = `${data["humidity-int"]} %`;
-                            document.getElementById("info-ext-temp").textContent = `${data["temperature-ext"]}°C`;
-                            document.getElementById("info-ext-humid").textContent = `${data["humidity-ext"]} %`;
+                            if (data.hasOwnProperty("temperature-int")) { document.getElementById("info-int-temp").textContent = `${data["temperature-int"]}°C`; }
+                            if (data.hasOwnProperty("humidity-int")) { document.getElementById("info-int-humid").textContent = `${data["humidity-int"]} %`; }
+                            if (data.hasOwnProperty("temperature-ext")) { document.getElementById("info-ext-temp").textContent = `${data["temperature-ext"]}°C`; }
+                            if (data.hasOwnProperty("humidity-ext")) { document.getElementById("info-ext-humid").textContent = `${data["humidity-ext"]} %`; }
                         }
                         else if (typ == "SLEEP") {
                             document.getElementById("info-sleep").textContent = `${data["timer"]}`;
