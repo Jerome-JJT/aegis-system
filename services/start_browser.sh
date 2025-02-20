@@ -13,4 +13,4 @@ echo "SEC"
 
 #/usr/bin/midori /home/admin/index.html
 #/usr/bin/midori http://localhost:8000
-/usr/bin/epiphany http://localhost:8000
+/usr/bin/epiphany --profile ~/.local/share/epiphany

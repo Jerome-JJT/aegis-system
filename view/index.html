@@ -15,7 +15,7 @@
             /* background-color: blue; */
             background-color: #2d327d;
             color: #eeeeee;
-            font-size: 14px;
+            font-size: 26px;
             /* font-size: 16px; */
             font-family: "helvetica", "sans-serif";
             font-weight: bold;
@@ -36,8 +36,12 @@
         }
 
         tr {
-            height: 1.7rem;
+            //height: 3rem;
             border-bottom: 1px solid white;
+        }
+        tr td {
+            padding-top: 6px;
+            padding-bottom: 6px;
         }
 
         /* td:first-child {
@@ -96,6 +100,8 @@
             border: 2px solid red;
             border-radius: 20px;
 
+            font-size: 22px;
+
             padding: 10px 20px;
             margin-right: 20px;
 
@@ -111,7 +117,7 @@
         }
 
         .infobox_spacing {
-            margin-top: 25px;
+            margin-top: 30px;
         }
     </style>
 </head>
@@ -122,8 +128,8 @@
 
             <div id="infobox" :class="{ hidden: !this.infoConnected }">
                 <div>
-                    <span>Estimed sleep :</span>
-                    <span id="info-sleep">14:05</span>
+                    <span>Estimed sleep :</span><span></span>
+                    <span id="info-sleep">14:05</span><span></span>
                 </div>
                 <div>
                     <span>Temp int :</span>
@@ -147,12 +153,12 @@
                 <table>
                     <thead>
                         <tr>
-                            <th style="width: 4rem">Type</th>
-                            <th style="width: 5.5rem">Heure</th>
-                            <th style="width: 2rem">Dir</th>
+                            <th style="width: 7rem">Type</th>
+                            <th style="width: 10rem">Heure</th>
+                            <th style="width: 4rem">Dir</th>
                             <th style="width: auto">Destination</th>
-                            <th style="width: 2.5rem">Voie</th>
-                            <th style="width: 18rem">Remarque</th>
+                            <th style="width: 4rem">Voie</th>
+                            <th style="width: 14rem">Remarque</th>
                         </tr>
                     </thead>
                     <tbody>
