@@ -15,7 +15,7 @@
             /* background-color: blue; */
             background-color: #2d327d;
             color: #eeeeee;
-            font-size: 38px;
+            font-size: 42px;
             /* font-size: 16px; */
             font-family: "helvetica", "sans-serif";
             font-weight: bold;
@@ -55,27 +55,27 @@
         }
 
         th:nth-child(1), td:nth-child(1) {
-            width: 6rem;
+            min-width: 2.4rem; max-width: 2.4rem;
         }
 
         th:nth-child(2), td:nth-child(2) {
-            width: 12rem;
+            min-width: 6rem; max-width: 6rem;
         }
 
         th:nth-child(3), td:nth-child(3) {
-            width: 4rem;
+            min-width: 2rem; max-width:24rem;
         }
 
         th:nth-child(4), td:nth-child(4) {
-            width: 10rem;
+            min-width: 10rem; max-width: 10rem;
         }
 
         th:nth-child(5), td:nth-child(5) {
-            width: 4rem;
+            min-width: 2rem; max-width: 2rem;
         }
 
         th:nth-child(6), td:nth-child(6) {
-            width: 10rem;
+            min-width: 2.8rem; max-width: 2.8rem;
             font-size: 30px;
         }
 
@@ -89,10 +89,10 @@
             margin-right: 10px;
         }
 
-        td:nth-child(4) {
+        td:nth-child(4), th:nth-child(6), td:nth-child(6) {
             text-overflow: ellipsis;
             overflow: hidden;
-//            white-space: nowrap;
+            white-space: nowrap;
         }
 
         td:nth-child(6) {
