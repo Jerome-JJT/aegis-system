@@ -31,7 +31,7 @@ install Debian GNU/Linux 12 (bookworm)  (/etc/os-release)
 Add `*/5 * * * *  cd /home/admin/aegis-system; ./env/bin/python ./code/_common/discord_message.py "$(date) $(hostname -I) $(iwgetid)"`<br>
 `sudo nano /etc/rc.local`<br>
 Add `cd /home/admin/aegis-system; ./env/bin/python ./code/_common/discord_message.py "STARTUP $(date) $(hostname -I) $(iwgetid)"`<br>
-
+`sudo mv /usr/share/icons/PiXflat/cursors/left_ptr /usr/share/icons/PiXflat/cursors/left_ptr.bak`<br>
 
 #### Services
 `sudo mkdir -p /var/log/aegis`<br>
