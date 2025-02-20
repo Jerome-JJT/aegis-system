@@ -35,6 +35,10 @@
             margin-bottom: 0.3rem;
         }
 
+        th {
+            text-align: left;
+        }
+
         tr {
             //height: 3rem;
             border-bottom: 1px solid white;
@@ -42,43 +46,57 @@
         tr td {
             padding-top: 6px;
             padding-bottom: 6px;
-            white-space: nowrap;
+//            white-space: nowrap;
         }
-
-        /* td:first-child {
-        } */
 
         thead tr,
         tr:nth-child(2n+2) {
             background-color: #4d529d;
         }
 
-        td:first-child div {
-            padding-left: 1px;
-            padding-top: 1px;
-            margin-right: 10px;
+        th:nth-child(1), td:nth-child(1) {
+            width: 6rem;
+        }
+
+        th:nth-child(2), td:nth-child(2) {
+            width: 12rem;
+        }
+
+        th:nth-child(3), td:nth-child(3) {
+            width: 4rem;
+        }
+
+        th:nth-child(4), td:nth-child(4) {
+            width: 10rem;
+        }
+
+        th:nth-child(5), td:nth-child(5) {
+            width: 4rem;
+        }
+
+        th:nth-child(6), td:nth-child(6) {
+            width: 10rem;
+            font-size: 30px;
+        }
+
+        td:nth-child(1) div {
             background-color: white;
             color: black;
             font-size: 30px;
+
+            padding-left: 1px;
+            padding-top: 1px;
+            margin-right: 10px;
         }
 
         td:nth-child(4) {
             text-overflow: ellipsis;
             overflow: hidden;
-            white-space: nowrap;
+//            white-space: nowrap;
         }
 
-        /* td:nth-child(5) */
-        /* td:nth-child(5) */
-        th:last-child, td:last-child {
-            font-size: 30px;
-        }
-        td:last-child {
+        td:nth-child(6) {
             color: yellow;
-        }
-
-        th {
-            text-align: left;
         }
 
         html,
@@ -164,12 +182,12 @@
                 <table>
                     <thead>
                         <tr>
-                            <th style="width: 6rem">Type</th>
-                            <th style="width: 12rem">Heure</th>
-                            <th style="width: 4rem">Dir</th>
-                            <th style="width: 10rem">Destination</th>
-                            <th style="width: 4rem">Voie</th>
-                            <th style="width: 10rem">Remarque</th>
+                            <th>Type</th>
+                            <th>Heure</th>
+                            <th>Dir</th>
+                            <th>Destination</th>
+                            <th>Voie</th>
+                            <th>Remarque</th>
                         </tr>
                     </thead>
                     <tbody>
