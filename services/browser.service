@@ -25,4 +25,4 @@ Type=simple
 KillMode=process
 
 [Install]
-WantedBy=default.target
+WantedBy=graphical.target

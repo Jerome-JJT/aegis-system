@@ -28,8 +28,10 @@ load_dotenv(override=True)
 class StandbyManager:
     _instance = None
 
+    TD_MOVE = int(os.getenv('TD_MOVE') or "10")
+
     is_sleeping = True
-    curr_timer = datetime.datetime.now() + datetime.timedelta(minutes=10)
+    curr_timer = datetime.datetime.now() + datetime.timedelta(minutes=TD_MOVE)
 
     captors = {
         "int": {
@@ -85,9 +87,9 @@ class StandbyManager:
         return val
 
     def clap_cb(self, channel):
-        rich.print("[magenta] {datetime.datetime.now()} CLAP CB RISING")
+        rich.print(f"[magenta] {datetime.datetime.now()} CLAP CB RISING")
 
-        manager.curr_timer = max(manager.curr_timer, datetime.datetime.now() + datetime.timedelta(minutes=10))
+        manager.curr_timer = max(manager.curr_timer, datetime.datetime.now() + datetime.timedelta(minutes=manager.TD_MOVE))
 
     def get_clap(self):
 #        rich.print(self.CLAP_PIN)
@@ -164,7 +166,7 @@ def pir_watcher():
 
         if (pir == True):
             rich.print(f"[magenta]detect PIR")
-            manager.curr_timer = max(manager.curr_timer, datetime.datetime.now() + datetime.timedelta(minutes=10))
+            manager.curr_timer = max(manager.curr_timer, datetime.datetime.now() + datetime.timedelta(minutes=manager.TD_MOVE))
 
         time.sleep(0.4)
 
@@ -178,7 +180,7 @@ def clap_watcher():
 
         if (clap == True):
             rich.print(f"[magenta]detect CLAP")
-            manager.curr_timer = max(manager.curr_timer, datetime.datetime.now() + datetime.timedelta(minutes=10))
+            manager.curr_timer = max(manager.curr_timer, datetime.datetime.now() + datetime.timedelta(minutes=cls._instance.TD_MOVE))
 
         time.sleep(1)
 

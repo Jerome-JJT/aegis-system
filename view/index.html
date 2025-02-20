@@ -11,11 +11,11 @@
     <!-- <script src="https://cdn.jsdelivr.net/npm/vue@3.5.13/dist/vue.global.prod.js"></script> -->
     <script src="vue.global.prod.js"></script>
     <style>
-        body {
+        html {
             /* background-color: blue; */
             background-color: #2d327d;
             color: #eeeeee;
-            font-size: 26px;
+            font-size: 38px;
             /* font-size: 16px; */
             font-family: "helvetica", "sans-serif";
             font-weight: bold;
@@ -42,6 +42,7 @@
         tr td {
             padding-top: 6px;
             padding-bottom: 6px;
+            white-space: nowrap;
         }
 
         /* td:first-child {
@@ -58,10 +59,20 @@
             margin-right: 10px;
             background-color: white;
             color: black;
+            font-size: 30px;
+        }
+
+        td:nth-child(4) {
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
         }
 
         /* td:nth-child(5) */
         /* td:nth-child(5) */
+        th:last-child, td:last-child {
+            font-size: 30px;
+        }
         td:last-child {
             color: yellow;
         }
@@ -133,15 +144,15 @@
                 </div>
                 <div>
                     <span>Temp int :</span>
-                    <span id="info-int-temp">26.0°C</span>
+                    <span id="info-int-temp">-1.0°C</span>
                     <span>Humid int :</span>
-                    <span id="info-int-humid">9.0 %</span>
+                    <span id="info-int-humid">-1.0 %</span>
                 </div>
                 <div>
                     <span>Temp ext :</span>
-                    <span id="info-ext-temp">26.0°C</span>
+                    <span id="info-ext-temp">-1.0°C</span>
                     <span>Humid ext :</span>
-                    <span id="info-ext-humid">9.0 %</span>
+                    <span id="info-ext-humid">-1.0 %</span>
                 </div>
             </div>
 
@@ -153,12 +164,12 @@
                 <table>
                     <thead>
                         <tr>
-                            <th style="width: 7rem">Type</th>
-                            <th style="width: 10rem">Heure</th>
+                            <th style="width: 6rem">Type</th>
+                            <th style="width: 12rem">Heure</th>
                             <th style="width: 4rem">Dir</th>
-                            <th style="width: auto">Destination</th>
+                            <th style="width: 10rem">Destination</th>
                             <th style="width: 4rem">Voie</th>
-                            <th style="width: 14rem">Remarque</th>
+                            <th style="width: 10rem">Remarque</th>
                         </tr>
                     </thead>
                     <tbody>

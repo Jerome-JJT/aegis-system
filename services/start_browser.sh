@@ -2,7 +2,10 @@
 
 export XDG_RUNTIME_DIR="/run/user/1000"
 
-/usr/bin/sleep 60
+
+/usr/bin/sleep 120
+
+/usr/bin/wlr-randr --output "HDMI-A-1" --transform 270
 
 echo "GIRST"
 echo $(/usr/bin/whoami)
