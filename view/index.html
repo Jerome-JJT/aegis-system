@@ -32,6 +32,7 @@
         }
 
         h2 {
+            font-size: 1.3rem;
             margin-top: 0;
             margin-bottom: 0.3rem;
         }
@@ -55,30 +56,37 @@
             background-color: #4d529d;
         }
 
+        :root {
+            --col-1: 2.8rem;
+            --col-2: 5.5rem;
+            --col-3: 2.2rem;
+            --col-4: auto;
+            --col-5: 2.2rem;
+            --col-6: 2.8rem;
+        }
+
         th:nth-child(1), td:nth-child(1) {
-            min-width: 30px; max-width: 30px;
+            min-width: var(--col-1); width: var(--col-1); max-width: var(--col-1);
         }
 
         th:nth-child(2), td:nth-child(2) {
-            min-width: 7rem; max-width: 7rem;
+            min-width: var(--col-2); width: var(--col-2); max-width: var(--col-2);
         }
 
         th:nth-child(3), td:nth-child(3) {
-            min-width: 0.5rem; max-width: 0.5rem;
+            min-width: var(--col-3); width: var(--col-3); max-width: var(--col-3);
         }
 
         th:nth-child(4), td:nth-child(4) {
-            width: auto;
-            color: red;
-            //min-width: 10rem; //max-width: 10rem;
+            min-width: var(--col-4); width: var(--col-4); max-width: var(--col-4);
         }
 
         th:nth-child(5), td:nth-child(5) {
-            min-width: 0.5rem; max-width: 0.5rem;
+            min-width: var(--col-5); width: var(--col-5); max-width: var(--col-5);
         }
 
         th:nth-child(6), td:nth-child(6) {
-            min-width: 2.8rem; max-width: 2.8rem;
+            min-width: var(--col-6); width: var(--col-6); max-width: var(--col-6);
             font-size: 0.8rem;
         }
 
