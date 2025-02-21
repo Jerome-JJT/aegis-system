@@ -11,6 +11,6 @@ if [[ $1 = "off" ]]; then
 	#dtparam hdmi="off"
 else
 	echo "going on"
-	wlr-randr --output "HDMI-A-1" --on --transform 270
+	wlr-randr --output "HDMI-A-1" --on --transform normal
 	#dtparam hdmi="on"
 fi

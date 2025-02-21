@@ -27,11 +27,13 @@
             border-collapse: collapse;
             margin-bottom: 15px;
 
-            /* border: 2px solid red; */
+            border: 1px solid white;
             padding: 2px;
         }
 
         h2 {
+            text-center: center;
+
             font-size: 1.3rem;
             margin-top: 0;
             margin-bottom: 0.3rem;
@@ -48,7 +50,8 @@
         tr td {
             padding-top: 6px;
             padding-bottom: 6px;
-            /* white-space: nowrap; */
+            overflow: hidden;
+            white-space: nowrap;
         }
 
         thead tr,
@@ -102,8 +105,6 @@
 
         th:nth-child(4), td:nth-child(4), th:nth-child(6), td:nth-child(6) {
             text-overflow: ellipsis;
-            overflow: hidden;
-            white-space: nowrap;
         }
 
         .hide_track th:nth-child(5), .hide_track td:nth-child(5) {
@@ -141,9 +142,19 @@
             display: none !important;
         }
 
-        #infobox {
+        #curr_hour {
             position: absolute;
             right: 0;
+
+            font-size: 22px;
+
+            padding: 10px 20px;
+            margin-right: 20px;
+        }
+
+        #infobox {
+            position: absolute;
+            left: 50%;
             background-color: rgba(255, 255, 255, 0.2);
 
             border: 2px solid red;
@@ -167,6 +178,13 @@
 
         .infobox_spacing {
             margin-top: 30px;
+        }
+
+        .grid-container {
+            height: 100%;
+            display: grid;
+
+            gap: 10px 30px;
         }
 
         /* Three items: Last item spans two rows */
@@ -220,15 +238,19 @@
                 </div>
             </div>
 
+            <div id="curr_hour">
+                12:34:56
+            </div>
+
             <div v-if="!Object.keys(tables).length" class="loader" style="margin: 38vh auto; width: 15vh; height: 15vh">
             </div>
 
             <!-- <div style="display: grid; flex-direction: row; flex-wrap: wrap"> -->
             <!-- <div style="display: grid; grid-auto-flow: row; grid-template-columns: repeat(2, 1fr); grid-template-rows: minmax(auto, auto); gap: 10px;"> -->
             <!-- <div style="height: 100%; display: grid; grid-auto-flow: row; grid-template-columns: repeat(2, minmax(50%, auto)); grid-template-rows: repeat(2, minmax(50%, auto)); gap: 10px;"> -->
-            <div style="height: 100%; display: grid; gap: 10px" class="grid-container">
+            <div class="grid-container">
                 <div v-for="(table, tableIndex) in orderedTables" :key="tableIndex" :class="{ infobox_spacing: this.infoConnected }" style="overflow: hidden">
-                    <h2>Table {{ table.table_name }}</h2>
+                    <h2>{{ table.table_name }}</h2>
                     <table :class="{ hide_track: !table.show_track }">
                         <thead>
                             <tr>
