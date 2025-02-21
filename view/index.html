@@ -42,13 +42,13 @@
         }
 
         tr {
-            //height: 3rem;
+            /* height: 3rem; */
             border-bottom: 1px solid white;
         }
         tr td {
             padding-top: 6px;
             padding-bottom: 6px;
-//            white-space: nowrap;
+            /* white-space: nowrap; */
         }
 
         thead tr,
@@ -58,7 +58,7 @@
 
         :root {
             --col-1: 2.8rem;
-            --col-2: 5.5rem;
+            --col-2: 5.8rem;
             --col-3: 2.2rem;
             --col-4: auto;
             --col-5: 2.2rem;
@@ -100,7 +100,7 @@
             margin-right: 10px;
         }
 
-        td:nth-child(4), th:nth-child(6), td:nth-child(6) {
+        th:nth-child(4), td:nth-child(4), th:nth-child(6), td:nth-child(6) {
             text-overflow: ellipsis;
             overflow: hidden;
             white-space: nowrap;
@@ -168,6 +168,32 @@
         .infobox_spacing {
             margin-top: 30px;
         }
+
+        /* Three items: Last item spans two rows */
+        .grid-container > div:nth-child(1):nth-last-child(2) {
+            grid-column: 1 / 2;
+            grid-row: 1 / 2;
+        }
+        .grid-container > div:nth-child(2):nth-last-child(1) {
+            grid-column: 2 / 3;
+            grid-row: 1 / 2;
+        }
+
+        /* Three items: Last item spans two rows */
+        .grid-container > div:nth-child(3):nth-last-child(1) {
+            grid-column: 2 / 3;
+            grid-row: 1 / 3;
+        }
+
+        /* Four items: 2x2 grid */
+        .grid-container > div:nth-child(3):nth-last-child(2) {
+            grid-column: 2 / 3;
+            grid-row: 1 / 2;
+        }
+        .grid-container > div:nth-child(4):nth-last-child(1) {
+            grid-column: 2 / 3;
+            grid-row: 2 / 3;
+        }
     </style>
 </head>
 
@@ -197,32 +223,37 @@
             <div v-if="!Object.keys(tables).length" class="loader" style="margin: 38vh auto; width: 15vh; height: 15vh">
             </div>
 
-            <div v-for="(table, tableIndex) in orderedTables" :key="tableIndex" :class="{ infobox_spacing: this.infoConnected }">
-                <h2>Table {{ table.table_name }}</h2>
-                <table :class="{ hide_track: !table.show_track }">
-                    <thead>
-                        <tr>
-                            <th>Type</th>
-                            <th>Heure</th>
-                            <th>Dir</th>
-                            <th>Destination</th>
-                            <th>Voie</th>
-                            <th>Remarque</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr v-for="(train, trainIndex) in table.trains" :key="trainIndex">
-                            <td>
-                                <div>{{ train.category }} {{ train.number }}</div>
-                            </td>
-                            <td><time-component :time="train.start.time" :pronotime="train.start.prono_time" /></td>
-                            <td>{{ train.dir }}</td>
-                            <td>{{ train.to }}</td>
-                            <td style="text-align: center;">{{ train.start.platform ?? '-' }}</td>
-                            <td>{{ this.formatRemark(train) }}</td>
-                        </tr>
-                    </tbody>
-                </table>
+            <!-- <div style="display: grid; flex-direction: row; flex-wrap: wrap"> -->
+            <!-- <div style="display: grid; grid-auto-flow: row; grid-template-columns: repeat(2, 1fr); grid-template-rows: minmax(auto, auto); gap: 10px;"> -->
+            <!-- <div style="height: 100%; display: grid; grid-auto-flow: row; grid-template-columns: repeat(2, minmax(50%, auto)); grid-template-rows: repeat(2, minmax(50%, auto)); gap: 10px;"> -->
+            <div style="height: 100%; display: grid; gap: 10px" class="grid-container">
+                <div v-for="(table, tableIndex) in orderedTables" :key="tableIndex" :class="{ infobox_spacing: this.infoConnected }" style="overflow: hidden">
+                    <h2>Table {{ table.table_name }}</h2>
+                    <table :class="{ hide_track: !table.show_track }">
+                        <thead>
+                            <tr>
+                                <th>Type</th>
+                                <th>Heure</th>
+                                <th>Dir</th>
+                                <th>Destination</th>
+                                <th>Voie</th>
+                                <th>Remarque</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr v-for="(train, trainIndex) in table.trains" :key="trainIndex">
+                                <td>
+                                    <div>{{ train.category }} {{ train.number }}</div>
+                                </td>
+                                <td><time-component :time="train.start.time" :pronotime="train.start.prono_time" /></td>
+                                <td>{{ train.dir }}</td>
+                                <td>{{ train.to }}</td>
+                                <td style="text-align: center;">{{ train.start.platform ?? '-' }}</td>
+                                <td>{{ this.formatRemark(train) }}</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
