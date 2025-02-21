@@ -106,6 +106,10 @@
             white-space: nowrap;
         }
 
+        .hide_track th:nth-child(5), .hide_track td:nth-child(5) {
+            display: none !important;
+        }
+
         td:nth-child(6) {
             color: yellow;
         }
@@ -195,7 +199,7 @@
 
             <div v-for="(table, tableIndex) in orderedTables" :key="tableIndex" :class="{ infobox_spacing: this.infoConnected }">
                 <h2>Table {{ table.table_name }}</h2>
-                <table>
+                <table :class="{ hide_track: !table.show_track }">
                     <thead>
                         <tr>
                             <th>Type</th>
@@ -281,7 +285,6 @@
                 }
             },
             methods: {
-                
                 pluralize(number, singular = "", plural = "s") {
                     return (number == 1 ? singular : plural);
                 },
@@ -363,11 +366,12 @@
                 },
                 onData(data) {
                     try {
-                        console.log('new trains', data["elems"]);
+                        console.log('new trains', data, data["elems"]);
 
                         if (!Object.keys(this.tables).includes(data["id"])) {
                             this.tables[data["id"]] = {
                                 table_name: data["name"],
+                                show_track: data["show_track"],
                                 corder: data["corder"],
                                 trains: [],
                             }

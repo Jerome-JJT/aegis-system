@@ -37,6 +37,7 @@ def handle(websocket):
                             websocket.send(json.dumps({
                                 'id': sub_buffer, 
                                 'name': check.get('name') or '', 
+                                'show_track': check.get('show_track') if check.get('show_track') != None else True,
                                 'corder': check.get('display') or 50,
                                 'elems': list(buffers[sub_buffer].values()) or []
                             }))
@@ -169,6 +170,7 @@ def update(check):
                 CLIENTS[sockid].send(json.dumps({
                     'id': conf_id, 
                     'name': check.get('name') or '',
+                    'show_track': check.get('show_track') if check.get('show_track') != None else True,
                     'corder': check.get('display') or 50,
                     'elems': res
                 }))
