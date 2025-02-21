@@ -32,7 +32,7 @@
         }
 
         h2 {
-            text-center: center;
+            text-align: center;
 
             font-size: 1.3rem;
             margin-top: 0;
@@ -146,21 +146,22 @@
             position: absolute;
             right: 0;
 
-            font-size: 22px;
+            font-size: 1.2rem;
 
-            padding: 10px 20px;
+            padding: 5px 5px;
             margin-right: 20px;
         }
 
         #infobox {
             position: absolute;
             left: 50%;
+            transform: translateX(-50%);
             background-color: rgba(255, 255, 255, 0.2);
 
             border: 2px solid red;
             border-radius: 20px;
 
-            font-size: 22px;
+            font-size: 0.55rem;
 
             padding: 10px 20px;
             margin-right: 20px;
@@ -472,11 +473,13 @@
                     const timers = document.getElementsByClassName("timer");
                     const now = new Date();
 
+                    document.getElementById("curr_hour").textContent = `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
+
                     for (let i = 0; i < timers.length; i++) {
                         const timerDeadline = timers[i].attributes["data-time"].value;
                         timers[i].textContent = diffTime(new Date(timerDeadline), now);
                     }
-                }, 10000)
+                }, 5000)
             }
         }).mount('#app');
     </script>
