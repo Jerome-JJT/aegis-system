@@ -42,6 +42,8 @@
 
         th {
             text-align: left;
+            overflow: hidden;
+            vertical-align: baseline;
         }
 
         tr {
@@ -49,8 +51,7 @@
             border-bottom: 1px solid white;
         }
         tr td {
-            padding-top: 6px;
-            padding-bottom: 6px;
+            padding-top: 9px;
             overflow: hidden;
             white-space: nowrap;
         }
@@ -100,12 +101,14 @@
             display: flex;
             border-radius: 4px;
 
+            margin-top: -4px;
             font-size: 0.8rem;
             line-height: 1rem;
+            margin-right: 8px;
         }
 
-        td:nth-child(1) div img:not([src]) {
-            padding-top: 1px;
+        td:nth-child(1) div:not(:has(img)) {
+            padding-top: 3px;
             padding-left: 5px;
         }
 
@@ -327,7 +330,7 @@
             }
             const fbs = obj.attributes["data-fbs"].value.split(",");
             const current = obj.attributes.src.value;
-            const iconId = current.replace("cff/icons/", "").replace(".svg", "");
+            const iconId = current.replace("cff/icons/", "");
 
             const pos = fbs.findIndex((e) => e === iconId);
 
@@ -335,14 +338,15 @@
             setTimeout(() => {
                 if (pos === -1) {
                     // console.log('switch to base', `cff/icons/${fbs[0]}.svg`)
-                    obj.src = `cff/icons/${fbs[0]}.svg`;
+                    obj.src = `cff/icons/${fbs[0]}`;
                 }
                 else if (pos < fbs.length - 1) {
                     // console.log('switch to', pos, `cff/icons/${fbs[pos + 1]}.svg`)
-                    obj.src = `cff/icons/${fbs[pos + 1]}.svg`;
+                    obj.src = `cff/icons/${fbs[pos + 1]}`;
                 }
                 else {
-                    obj.removeAttribute("src");
+                    obj.parentElement.innerHTML = obj.attributes.alt.value;
+                    // obj.removeAttribute("src");
                 }
             }, 3000);
         };
@@ -402,7 +406,7 @@
                     return str.join(", ");
                 },
                 genIconName(t1, t2) {
-                    return [`${t1.toLowerCase()}-${t2.toLowerCase()}`];
+                    return [`${t1.toLowerCase()}-${t2.toLowerCase()}.svg`, `${t1.toLowerCase()}-${t2.toLowerCase()}.png`];
                 },
 
                 tryConnect(timeout = 1000) {
