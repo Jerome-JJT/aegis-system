@@ -61,7 +61,7 @@
         }
 
         :root {
-            --col-1: 2.8rem;
+            --col-1: 3rem;
             --col-2: 5.8rem;
             --col-3: 2.2rem;
             --col-4: auto;
@@ -147,8 +147,8 @@
             position: absolute;
             left: 0;
 
-            width: 7rem;
-            height: 7rem;
+            width: 3rem;
+            height: 3rem;
             margin: 5px 5px;
         }
 
@@ -158,8 +158,7 @@
 
             font-size: 1.2rem;
 
-            padding: 5px 5px;
-            margin-right: 20px;
+            margin: 5px 10px;
         }
 
         #infobox {
@@ -294,11 +293,11 @@
     </div>
 
     <script>
-        const parseTime = (input) => {
+        const parseTime = (input, sec = false) => {
             const date = new Date(input);
             return new Intl.DateTimeFormat(
                 'en-GB',
-                { hour: '2-digit', minute: '2-digit' }
+                sec ? { hour: '2-digit', minute: '2-digit', second: '2-digit' } : { hour: '2-digit', minute: '2-digit' }
             ).format(date);
         };
         const diffTime = (time, now = null) => {
@@ -482,18 +481,19 @@
                 });
 
                 setInterval(() => {
+                    const now = new Date();
+                    document.getElementById("curr_hour").textContent = `${parseTime(now, true)}`;
+                }, 1000);
+
+                setInterval(() => {
                     const timers = document.getElementsByClassName("timer");
                     const now = new Date();
-
-                    document.getElementById("curr_hour").textContent = `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`;
 
                     for (let i = 0; i < timers.length; i++) {
                         const timerDeadline = timers[i].attributes["data-time"].value;
                         timers[i].textContent = diffTime(new Date(timerDeadline), now);
                     }
                 }, 5000);
-
-                
             }
         }).mount('#app');
 
