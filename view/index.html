@@ -97,15 +97,24 @@
         td:nth-child(1) div {
             background-color: white;
             color: black;
-            font-size: 0.8rem;
+            display: flex;
+            border-radius: 4px;
 
-            padding-left: 1px;
+            font-size: 0.8rem;
+            line-height: 1rem;
+        }
+
+        td:nth-child(1) div img:not([src]) {
             padding-top: 1px;
-            margin-right: 10px;
+            padding-left: 5px;
         }
 
         th:nth-child(4), td:nth-child(4), th:nth-child(6), td:nth-child(6) {
             text-overflow: ellipsis;
+        }
+
+        .hide_dir th:nth-child(3), .hide_dir td:nth-child(3) {
+            display: none !important;
         }
 
         .hide_track th:nth-child(5), .hide_track td:nth-child(5) {
@@ -262,9 +271,9 @@
             <!-- <div style="display: grid; grid-auto-flow: row; grid-template-columns: repeat(2, 1fr); grid-template-rows: minmax(auto, auto); gap: 10px;"> -->
             <!-- <div style="height: 100%; display: grid; grid-auto-flow: row; grid-template-columns: repeat(2, minmax(50%, auto)); grid-template-rows: repeat(2, minmax(50%, auto)); gap: 10px;"> -->
             <div class="grid-container">
-                <div v-for="(table, tableIndex) in orderedTables" :key="tableIndex" :class="{ infobox_spacing: this.infoConnected }" style="overflow: hidden">
+                <div v-for="(table, tableIndex) in orderedTables" :key="tableIndex" :class="{ infobox_spacing: this.infoConnected }" style="overflow-y: hidden">
                     <h2>{{ table.table_name }}</h2>
-                    <table :class="{ hide_track: !table.show_track }">
+                    <table :class="{ hide_dir: !table.show_dir, hide_track: !table.show_track }">
                         <thead>
                             <tr>
                                 <th>Type</th>
@@ -278,7 +287,9 @@
                         <tbody>
                             <tr v-for="(train, trainIndex) in table.trains" :key="trainIndex">
                                 <td>
-                                    <div>{{ train.category }} {{ train.number }}</div>
+                                    <div><img :data-fbs="genIconName(`${train.category}`, `${train.number}`)" onerror="imgFallback(this)" 
+                                        width="100%" src="" v-bind:alt="train.train_name"></div>
+                                    <!-- <div>{{ train.category }} {{ train.number }}</div> -->
                                 </td>
                                 <td><time-component :time="train.start.time" :pronotime="train.start.prono_time" /></td>
                                 <td>{{ train.dir }}</td>
@@ -294,11 +305,11 @@
     </div>
 
     <script>
-        const parseTime = (input) => {
+        const parseTime = (input, sec = false) => {
             const date = new Date(input);
             return new Intl.DateTimeFormat(
                 'en-GB',
-                { hour: '2-digit', minute: '2-digit' }
+                sec ? { hour: '2-digit', minute: '2-digit', second: '2-digit' } : { hour: '2-digit', minute: '2-digit' }
             ).format(date);
         };
         const diffTime = (time, now = null) => {
@@ -308,6 +319,33 @@
             const minutesUntil = Math.floor(timeDifference / (1000 * 60));
 
             return `${minutesUntil}'`;
+        };
+        const imgFallback = (obj) => {
+            // console.log(obj)
+
+            if (obj.attributes["src"] === undefined || obj.attributes["data-fbs"] === undefined) {
+                return ;
+            }
+            const fbs = obj.attributes["data-fbs"].value.split(",");
+            const current = obj.attributes.src.value;
+            const iconId = current.replace("cff/icons/", "").replace(".svg", "");
+
+            const pos = fbs.findIndex((e) => e === iconId);
+
+            // console.log('enter', pos, fbs.length)
+            setTimeout(() => {
+                if (pos === -1) {
+                    // console.log('switch to base', `cff/icons/${fbs[0]}.svg`)
+                    obj.src = `cff/icons/${fbs[0]}.svg`;
+                }
+                else if (pos < fbs.length - 1) {
+                    // console.log('switch to', pos, `cff/icons/${fbs[pos + 1]}.svg`)
+                    obj.src = `cff/icons/${fbs[pos + 1]}.svg`;
+                }
+                else {
+                    obj.removeAttribute("src");
+                }
+            }, 3000);
         };
 
         Vue.createApp({
@@ -320,7 +358,7 @@
                                 return [
                                     `<del style="font-size: 0.5rem;">${parseTime(this.time)}</del>`,
                                     `<span style="color: yellow;">${parseTime(this.pronotime)}</span>`,
-                                    `<span style="color: yellow;" class="timer" data-time='${this.pronotime}''> ${diffTime(new Date(this.pronotime))}</span>`
+                                    `<span class="timer" data-time='${this.pronotime}''> ${diffTime(new Date(this.pronotime))}</span>`
                                 ].join('');
                             }
                             else {
@@ -363,6 +401,9 @@
                         str.push(`platform ${train.start.prono_platform}`);
                     }
                     return str.join(", ");
+                },
+                genIconName(t1, t2) {
+                    return [`${t1.toLowerCase()}-${t2.toLowerCase()}`];
                 },
 
                 tryConnect(timeout = 1000) {
@@ -432,17 +473,23 @@
                 },
                 onData(data) {
                     try {
-                        console.log('new trains', data, data["elems"]);
+                        console.info('new trains', data["elems"]);
 
                         if (!Object.keys(this.tables).includes(data["id"])) {
                             this.tables[data["id"]] = {
                                 table_name: data["name"],
+                                show_dir: data["show_dir"],
                                 show_track: data["show_track"],
                                 corder: data["corder"],
                                 trains: [],
                             }
                         }
-                        this.tables[data["id"]]["trains"] = data["elems"];
+                        this.tables[data["id"]]["trains"] = data["elems"].map((e) => {
+                            return {
+                                ...e,
+                                'train_name': `${e.category} ${ e.number }`
+                            }
+                        });
                     }
                     catch (error) {
                         console.error("Error fetching table data:", error);
