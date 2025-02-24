@@ -4,8 +4,7 @@ Description=AEGIS cff watcher
 [Service]
 Environment=PATH=/home/admin/aegis-system/env/bin
 WorkingDirectory=/home/admin/aegis-system
-ExecStartPre=echo "" > /var/log/aegis/watcher.log;
-ExecStartPre=echo "" > /var/log/aegis/watcher.error;
+ExecStartPre=/usr/bin/rm -f /var/log/aegis/watcher.log /var/log/aegis/watcher.error
 ExecStart=/home/admin/aegis-system/env/bin/python -m code.standby.watcher --server
 #ExecReload=/bin/kill -s HUP $MAINPID
 ExecStop=/bin/kill -9 $MAINPID

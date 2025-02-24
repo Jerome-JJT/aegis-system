@@ -72,7 +72,7 @@ class StandbyManager:
 
             if (cls._instance.CLAP_PIN > 0):
                 GPIO.setup(cls._instance.CLAP_PIN, GPIO.IN)
-                GPIO.add_event_detect(cls._instance.CLAP_PIN, GPIO.RISING, cls._instance.clap_cb)
+                GPIO.add_event_detect(cls._instance.CLAP_PIN, GPIO.RISING, cls._instance.clap_cb, bouncetime=1000)
 
         #    GPIO.setup(cls._instance.CLAP_PIN, GPIO.IN, pull_up_down=GPIO.PUD_UP)
             # GPIO.add_event_detect(cls._instance.CLAP_PIN, GPIO.BOTH, callback=cls._instance.get_clap, bouncetime=300)
@@ -133,11 +133,13 @@ def sleep_watcher():
             manager.is_sleeping = True
             rich.print(f"[magenta]TURNING OFF SCREEN", datetime.datetime.now())
             os.system("/usr/bin/sudo /home/admin/aegis-system/services/manage_hdmi.sh off")
+            os.system("/home/admin/aegis-system/env/bin/python /home/admin/aegis-system/code/_common/discord_message.py 'go off'")
 
         elif (manager.curr_timer > datetime.datetime.now() and manager.is_sleeping == True):
             manager.is_sleeping = False
             rich.print(f"[magenta]TURNING ON SCREEN", datetime.datetime.now())
             os.system("/usr/bin/sudo /home/admin/aegis-system/services/manage_hdmi.sh on")
+            os.system("/home/admin/aegis-system/env/bin/python /home/admin/aegis-system/code/_common/discord_message.py 'go on'")
 
         if (old_curr_timer != manager.curr_timer):
             old_curr_timer = manager.curr_timer
@@ -168,7 +170,7 @@ def pir_watcher():
             rich.print(f"[magenta]detect PIR")
             manager.curr_timer = max(manager.curr_timer, datetime.datetime.now() + datetime.timedelta(minutes=manager.TD_MOVE))
 
-        time.sleep(0.4)
+        time.sleep(2)
 
 def clap_watcher():
     global CLIENTS

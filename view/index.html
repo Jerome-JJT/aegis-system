@@ -303,7 +303,7 @@
                                 <td><time-component :time="train.start.time" :pronotime="train.start.prono_time" /></td>
                                 <td>
                                     <img :data-fbs="[]" onerror="imgFallback(this)" 
-                                        :src="`cff/icons/arrow-pointing-${train.dir}-blue.svg`" v-bind:alt="train.dir">
+                                        :src="`cff/icons/arrow-pointing-${train.dir.toLowerCase()}-blue.svg`" v-bind:alt="train.dir">
                                 </td>
                                 <td>{{ train.to }}</td>
                                 <td style="text-align: center;">{{ train.start.platform ?? '-' }}</td>
@@ -446,7 +446,7 @@
                         this.connected = false;
                         console.log('main onclose triggered, retry in', timeout)
                         setTimeout(() => {
-                            this.tryConnect(Math.min(timeout * 3, 10 * 60 * 1000));
+                            this.tryConnect(Math.min(timeout * 3, 10 * 60 * 1000) + 5000);
                         }, timeout);
                     }
                 },
@@ -479,7 +479,7 @@
                         this.infoConnected = false;
                         console.log('infobox onclose triggered, retry in', timeout)
                         setTimeout(() => {
-                            this.tryConnectInfo(Math.min(timeout * 3, 10 * 60 * 1000));
+                            this.tryConnectInfo(Math.min(timeout * 3, 10 * 60 * 1000) + 5000);
                         }, timeout);
                     }
                 },
