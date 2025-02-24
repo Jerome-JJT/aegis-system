@@ -120,6 +120,15 @@
             display: none !important;
         }
 
+        td:nth-child(3) {
+            text-align: center;
+            height: 1rem;
+        }
+        td:nth-child(3) img {
+            height: 100%;
+            border: 1px solid white;
+        }
+
         .hide_track th:nth-child(5), .hide_track td:nth-child(5) {
             display: none !important;
         }
@@ -249,14 +258,14 @@
                     <span id="info-int-temp">-1.0°C</span>
                     <span>Humid int :</span>
                     <span id="info-int-humid">-1.0 %</span>
-                    <span>Estimed sleep :</span>
+                    <span style="grid-column: 1/3;">Estimed sleep :</span>
                 </div>
                 <div>
                     <span>Temp ext :</span>
                     <span id="info-ext-temp">-1.0°C</span>
                     <span>Humid ext :</span>
                     <span id="info-ext-humid">-1.0 %</span>
-                    <span id="info-sleep">14:05</span>
+                    <span style="grid-column: 1/3;" id="info-sleep">14:05</span>
                 </div>
             </div>
 
@@ -292,7 +301,10 @@
                                     <!-- <div>{{ train.category }} {{ train.number }}</div> -->
                                 </td>
                                 <td><time-component :time="train.start.time" :pronotime="train.start.prono_time" /></td>
-                                <td>{{ train.dir }}</td>
+                                <td>
+                                    <img :data-fbs="[]" onerror="imgFallback(this)" 
+                                        :src="`cff/icons/arrow-pointing-${train.dir}-blue.svg`" v-bind:alt="train.dir">
+                                </td>
                                 <td>{{ train.to }}</td>
                                 <td style="text-align: center;">{{ train.start.platform ?? '-' }}</td>
                                 <td>{{ this.formatRemark(train) }}</td>
@@ -324,6 +336,7 @@
             // console.log(obj)
 
             if (obj.attributes["src"] === undefined || obj.attributes["data-fbs"] === undefined) {
+                // console.log('early cancel')
                 return ;
             }
             const fbs = obj.attributes["data-fbs"].value.split(",");
@@ -333,20 +346,18 @@
             const pos = fbs.findIndex((e) => e === iconId);
 
             // console.log('enter', pos, fbs.length)
-            setTimeout(() => {
-                if (pos === -1) {
-                    // console.log('switch to base', `cff/icons/${fbs[0]}.svg`)
-                    obj.src = `cff/icons/${fbs[0]}`;
-                }
-                else if (pos < fbs.length - 1) {
-                    // console.log('switch to', pos, `cff/icons/${fbs[pos + 1]}.svg`)
-                    obj.src = `cff/icons/${fbs[pos + 1]}`;
-                }
-                else {
-                    obj.parentElement.innerHTML = obj.attributes.alt.value;
-                    // obj.removeAttribute("src");
-                }
-            }, 3000);
+            if (pos === -1 && fbs.length > 0) {
+                // console.log('switch to base', `cff/icons/${fbs[0]}.svg`)
+                obj.src = `cff/icons/${fbs[0]}`;
+            }
+            else if (pos < fbs.length - 1) {
+                // console.log('switch to', pos, `cff/icons/${fbs[pos + 1]}.svg`)
+                obj.src = `cff/icons/${fbs[pos + 1]}`;
+            }
+            else {
+                obj.parentElement.innerHTML = obj.attributes.alt.value;
+                // obj.removeAttribute("src");
+            }
         };
 
         Vue.createApp({
