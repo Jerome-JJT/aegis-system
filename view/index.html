@@ -106,6 +106,9 @@
             line-height: 1rem;
             margin-right: 8px;
         }
+        td:nth-child(1) div img {
+            width: 100%;
+        }
 
         td:nth-child(1) div:not(:has(img)) {
             padding-top: 3px;
@@ -124,7 +127,10 @@
             text-align: center;
             height: 1rem;
         }
-        td:nth-child(3) img {
+        td:nth-child(3) div {
+            display: contents;
+        }
+        td:nth-child(3) div img {
             height: 100%;
             border: 1px solid white;
         }
@@ -296,14 +302,11 @@
                         <tbody>
                             <tr v-for="(train, trainIndex) in table.trains" :key="tableIndex-trainIndex">
                                 <td>
-                                    <div><img :data-fbs="genIconName(`${train.category}`, `${train.number}`)" onerror="imgFallback(this)" 
-                                        width="100%" src="" v-bind:alt="train.train_name"></div>
-                                    <!-- <div>{{ train.category }} {{ train.number }}</div> -->
+                                    <imgfb-component :imgs="genIconName(`${train.category}`, `${train.number}`)" :txt="train.train_name" />
                                 </td>
                                 <td><time-component :time="train.start.time" :pronotime="train.start.prono_time" /></td>
                                 <td>
-                                    <img :data-fbs="[]" onerror="imgFallback(this)" 
-                                        :src="`cff/icons/arrow-pointing-${train.dir.toLowerCase()}-blue.svg`" v-bind:alt="train.dir">
+                                    <imgfb-component :imgs="[`arrow-pointing-${train.dir.toLowerCase()}-blue.svg`]" :txt="train.dir" />
                                 </td>
                                 <td>{{ train.to }}</td>
                                 <td style="text-align: center;">{{ train.start.platform ?? '-' }}</td>
@@ -332,33 +335,6 @@
 
             return `${minutesUntil}'`;
         };
-        const imgFallback = (obj) => {
-            // console.log(obj)
-
-            if (obj.attributes["src"] === undefined || obj.attributes["data-fbs"] === undefined) {
-                // console.log('early cancel')
-                return ;
-            }
-            const fbs = obj.attributes["data-fbs"].value.split(",");
-            const current = obj.attributes.src.value;
-            const iconId = current.replace("cff/icons/", "");
-
-            const pos = fbs.findIndex((e) => e === iconId);
-
-            // console.log('enter', pos, fbs.length)
-            if (pos === -1 && fbs.length > 0) {
-                // console.log('switch to base', `cff/icons/${fbs[0]}.svg`)
-                obj.src = `cff/icons/${fbs[0]}`;
-            }
-            else if (pos < fbs.length - 1) {
-                // console.log('switch to', pos, `cff/icons/${fbs[pos + 1]}.svg`)
-                obj.src = `cff/icons/${fbs[pos + 1]}`;
-            }
-            else {
-                obj.parentElement.innerHTML = obj.attributes.alt.value;
-                // obj.removeAttribute("src");
-            }
-        };
 
         Vue.createApp({
             components: {
@@ -370,19 +346,62 @@
                                 return [
                                     `<del style="font-size: 0.5rem;">${parseTime(this.time)}</del>`,
                                     `<span style="color: yellow;">${parseTime(this.pronotime)}</span>`,
-                                    `<span class="timer" data-time='${this.pronotime}''> ${diffTime(new Date(this.pronotime))}</span>`
+                                    `<span class="timer" data-time='${this.pronotime}'> ${diffTime(new Date(this.pronotime))}</span>`
                                 ].join('');
                             }
                             else {
                                 return [
                                     `<span>${parseTime(this.time)}</span>`,
-                                    `<span class="timer" data-time='${this.time}''> ${diffTime(new Date(this.time))}</span>`
+                                    `<span class="timer" data-time='${this.time}'> ${diffTime(new Date(this.time))}</span>`
                                 ].join('');
                             }
                         }
                     },
                     template: `
                         <span v-html="templateToUse"></span>
+                    `
+                },
+                'imgfb-component': {
+                    props: ['imgs', 'txt'],
+                    data() {
+                        return {
+                            currSrc: '',
+                        };
+                    },
+                    methods: {
+                        imgFallback() {
+                            // console.log(this.imgs);
+                            if (this.currSrc === undefined) {
+                                return ;
+                            }
+                            const iconId = this.currSrc.replace("cff/icons/", "");
+                            const pos = this.imgs.findIndex((e) => e === iconId);
+
+                            console.log('enter', pos, this.imgs.length)
+                            if (pos === -1 && this.imgs.length > 0) {
+                                // console.log('switch to base', `cff/icons/${this.imgs[0]}`)
+                                this.currSrc = `cff/icons/${this.imgs[0]}`;
+                            }
+                            else if (pos < this.imgs.length - 1) {
+                                // console.log('switch to', pos, `cff/icons/${this.imgs[pos + 1]}`)
+                                this.currSrc = `cff/icons/${this.imgs[pos + 1]}`;
+                            }
+                            else {
+                                // console.log('dead', this.imgs);
+                                this.currSrc = undefined;
+                            }
+                            
+                        },
+                    },
+                    template: `
+                        <div>
+                            <img :class="{ hidden: this.currSrc === undefined }" 
+                                v-bind:src="this.currSrc" @error="imgFallback"
+                            />
+                            <span :class="{ hidden: this.currSrc !== undefined }">
+                                {{txt}}
+                            </span>
+                        </div>
                     `
                 }
             },
