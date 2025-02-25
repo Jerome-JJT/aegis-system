@@ -133,13 +133,13 @@ def sleep_watcher():
             manager.is_sleeping = True
             rich.print(f"[magenta]TURNING OFF SCREEN", datetime.datetime.now())
             os.system("/usr/bin/sudo /home/admin/aegis-system/services/manage_hdmi.sh off")
-            os.system("/home/admin/aegis-system/env/bin/python /home/admin/aegis-system/code/_common/discord_message.py 'go off'")
+            os.system(f"/home/admin/aegis-system/env/bin/python /home/admin/aegis-system/code/_common/discord_message.py 'go off {datetime.datetime.now()}'")
 
         elif (manager.curr_timer > datetime.datetime.now() and manager.is_sleeping == True):
             manager.is_sleeping = False
             rich.print(f"[magenta]TURNING ON SCREEN", datetime.datetime.now())
             os.system("/usr/bin/sudo /home/admin/aegis-system/services/manage_hdmi.sh on")
-            os.system("/home/admin/aegis-system/env/bin/python /home/admin/aegis-system/code/_common/discord_message.py 'go on'")
+            os.system(f"/home/admin/aegis-system/env/bin/python /home/admin/aegis-system/code/_common/discord_message.py 'go on {datetime.datetime.now()}'")
 
         if (old_curr_timer != manager.curr_timer):
             old_curr_timer = manager.curr_timer
