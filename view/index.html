@@ -63,8 +63,8 @@
 
         :root {
             --col-1: 3rem;
-            --col-2: 5.8rem;
-            --col-3: 2.2rem;
+            --col-2: 2.2rem;
+            --col-3: 5.8rem;
             --col-4: auto;
             --col-5: 2.2rem;
             --col-6: 2.8rem;
@@ -119,18 +119,18 @@
             text-overflow: ellipsis '..';
         }
 
-        .hide_dir th:nth-child(3), .hide_dir td:nth-child(3) {
+        .hide_dir th:nth-child(2), .hide_dir td:nth-child(2) {
             display: none !important;
         }
 
-        td:nth-child(3) {
+        td:nth-child(2) {
             text-align: center;
             height: 1rem;
         }
-        td:nth-child(3) div {
+        td:nth-child(2) div {
             display: contents;
         }
-        td:nth-child(3) div img {
+        td:nth-child(2) div img {
             height: 100%;
             border: 1px solid white;
         }
@@ -292,8 +292,8 @@
                         <thead>
                             <tr>
                                 <th>Type</th>
-                                <th>Heure</th>
                                 <th>Dir</th>
+                                <th>Heure</th>
                                 <th>Destination</th>
                                 <th>Voie</th>
                                 <th>Remarque</th>
@@ -304,9 +304,11 @@
                                 <td>
                                     <imgfb-component :imgs="genIconName(`${train.category}`, `${train.number}`)" :txt="train.train_name" :key="train.train_name" />
                                 </td>
-                                <td><time-component :time="train.start.time" :pronotime="train.start.prono_time" /></td>
                                 <td>
                                     <imgfb-component :imgs="[`arrow-pointing-${train.dir.toLowerCase()}-blue.svg`]" :txt="train.dir" :key="train.dir" />
+                                </td>
+                                <td>
+                                    <time-component :time="train.start.time" :pronotime="train.start.prono_time" />
                                 </td>
                                 <td>{{ train.to }}</td>
                                 <td style="text-align: center;">{{ train.start.platform ?? '-' }}</td>
