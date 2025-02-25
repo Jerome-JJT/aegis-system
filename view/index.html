@@ -302,11 +302,11 @@
                         <tbody>
                             <tr v-for="(train, trainIndex) in table.trains" :key="tableIndex-trainIndex">
                                 <td>
-                                    <imgfb-component :imgs="genIconName(`${train.category}`, `${train.number}`)" :txt="train.train_name" />
+                                    <imgfb-component :imgs="genIconName(`${train.category}`, `${train.number}`)" :txt="train.train_name" :key="train.train_name" />
                                 </td>
                                 <td><time-component :time="train.start.time" :pronotime="train.start.prono_time" /></td>
                                 <td>
-                                    <imgfb-component :imgs="[`arrow-pointing-${train.dir.toLowerCase()}-blue.svg`]" :txt="train.dir" />
+                                    <imgfb-component :imgs="[`arrow-pointing-${train.dir.toLowerCase()}-blue.svg`]" :txt="train.dir" :key="train.dir" />
                                 </td>
                                 <td>{{ train.to }}</td>
                                 <td style="text-align: center;">{{ train.start.platform ?? '-' }}</td>

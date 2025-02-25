@@ -187,7 +187,7 @@ def update(check):
         except Exception as e:
             rich.print("[red]", 'unexpected error', e, elem)
 
-    tcmp = round(datetime.datetime.timestamp(datetime.datetime.now())) - ((check.get("check_frequency") or 30) * 2)
+    tcmp = round(datetime.datetime.timestamp(datetime.datetime.now())) - ((check.get("check_frequency") or 30) * 0.8)
     buffers[conf_id] = {k: v for k, v in buffers[conf_id].items() if v["last_update"] > tcmp}
 
 
