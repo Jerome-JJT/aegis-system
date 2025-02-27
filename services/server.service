@@ -4,8 +4,7 @@ Description=AEGIS cff server
 [Service]
 Environment=PATH=/home/admin/aegis-system/env/bin
 WorkingDirectory=/home/admin/aegis-system
-ExecStartPre=echo "" > /var/log/aegis/server.log;
-ExecStartPre=echo "" > /var/log/aegis/server.error;
+ExecStartPre=/usr/bin/rm -f /var/log/aegis/server.log /var/log/aegis/server.error;
 ExecStart=/home/admin/aegis-system/env/bin/python -m code.board.server --server
 #ExecReload=/bin/kill -s HUP $MAINPID
 ExecStop=/bin/kill -9 $MAINPID
