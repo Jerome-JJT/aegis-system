@@ -64,7 +64,7 @@
         :root {
             --col-1: 3rem;
             --col-2: 2.2rem;
-            --col-3: 5.8rem;
+            --col-3: 6.6rem;
             --col-4: auto;
             --col-5: 2.2rem;
             --col-6: 2.8rem;
@@ -335,7 +335,12 @@
 
             const minutesUntil = Math.floor(timeDifference / (1000 * 60));
 
-            return `${minutesUntil}'`;
+            if (minutesUntil <= 60) {
+                return `${minutesUntil}'`;
+            }
+            else {
+                return `${Math.floor(minutesUntil / 60)}h${minutesUntil % 60 < 10 ? '0' : ''}${minutesUntil % 60}`;
+            }
         };
 
         Vue.createApp({
