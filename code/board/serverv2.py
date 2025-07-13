@@ -156,10 +156,10 @@ def update(check):
 def updater(check):
     rich.print(f"[green]updater {check['id']} started")
     while True:
-        try:
-            update(check)
-        except Exception as e:
-            rich.print(f"[red]Whole loop error: {str(e)}")
+        # try:
+        update(check)
+        # except Exception as e:
+        #     rich.print(f"[red]Whole loop error: {str(e)}")
         time.sleep(check.get("check_frequency") or 60)
 
 @click.command()
