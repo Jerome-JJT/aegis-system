@@ -28,7 +28,7 @@ def parse_loc(loc):
         "prono_platform": loc["*L"] if 'departure' in loc.keys() else None,
         # "prono_platform": loc["prognosis"]["platform"],
 
-        "delay": int(loc['dep_delay'][1:]) if 'departure' in loc.keys() else loc["normal_time"],
+        "delay": int(loc['dep_delay'][1:]) if 'dep_delay' in loc.keys() else 0,
         # "prognosis": loc["prognosis"],
     }
     
