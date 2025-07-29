@@ -11,41 +11,37 @@ from .._common.discord_message import create_discord_payload, send_discord_paylo
 
 def parse_loc(loc):
 
+    # rich.print("LOC", loc)
+
     nloc = { 
-        "id": loc["stopid"],
         "name": loc["name"],
         "coordinate": {
             "lat": loc["lat"],
             "lon": loc["lon"],
         },
         
-        "time": loc["departure"] if 'departure' in loc.keys() else loc["arrival"],
-        "prono_time": loc["departure"] if 'departure' in loc.keys() else loc["arrival"],
-        # "prono_time": loc["prognosis"]["departure"] if loc["departure"] != None else loc["prognosis"]["arrival"],
+        "time": loc["departure"].split(' ')[-1],
+        "delay": int(loc["dep_delay"]) if 'dep_delay' in loc.keys() else 0,
 
-        "platform": loc["*L"] if 'departure' in loc.keys() else None,
-        # "platform": loc["platform"],
-        "prono_platform": loc["*L"] if 'departure' in loc.keys() else None,
-        # "prono_platform": loc["prognosis"]["platform"],
-
-        "delay": int(loc['dep_delay'][1:]) if 'dep_delay' in loc.keys() else 0,
-        # "prognosis": loc["prognosis"],
+        "platform": loc["*L"],
     }
     
     return nloc
 
 def parse_con(con):
+
+    # rich.print("CON", con)
     
     ncon = {
-        "start": parse_loc(con["legs"][0]),
-        "end": parse_loc(con["legs"][-1]),
-        "to": con["to"],
-        
+        "id": con["legs"][0]['tripid'],
+        "train": parse_loc(con["legs"][0]),
+        "from": con['from'],
+        "to": con['to'],
+         
         "duration": con["duration"],
-        # "transfers": con["transfers"],
-        # "products": ",".join(con["products"]) if type(con["products"]) == type([]) else con["products"],
         "category": con["legs"][0]["type"],
-        "name": con["legs"][0]["name"]
+        "name": con["legs"][0]["name"],
+        "disruptions": " ".join(map(lambda x: str(x), con["disruptions"])) if 'disruptions' in con.keys() else ''
     }
 
     diff_first = {
@@ -62,15 +58,13 @@ def parse_con(con):
 
     return ncon
 
-def conn_search(q="from=Chavornay&to=Renens", l=10):
-    l = 3
-    
+def conn_search(q="from=Chavornay&to=Renens", l=2):
     # limiter = "&fields[]=connections/from&fields[]=connections/to&fields[]=connections/duration&fields[]=connections/transfers&fields[]=connections/products"
 
     try:
         # url = f"http://transport.opendata.ch/v1/connections?{q}&limit={l}"
-        url = f"https://search.ch/timetable/api/route.json?show_delays=1&show_trackchanges=1&{q}&num={l}"
-        rich.print("REQ", url)
+        url = f"https://search.ch/timetable/api/route.json?show_delays=1&show_trackchanges=1&{q}&num={l}&time=7:00"
+        # rich.print("REQ", url)
         req = requests.get(url)
 
         if (req.ok):
