@@ -2,10 +2,10 @@
 Description=AEGIS cff serverv2
 
 [Service]
-Environment=PATH=/home/admin/aegis-system/env/bin
-WorkingDirectory=/home/admin/aegis-system
+Environment=PATH=/home/jjaqueme/aegis-system/env/bin
+WorkingDirectory=/home/jjaqueme/aegis-system
 ExecStartPre=/usr/bin/rm -f /var/log/aegis/serverv2.log /var/log/aegis/serverv2.error;
-ExecStart=/home/admin/aegis-system/env/bin/python -m code.board.serverv2 --server
+ExecStart=/home/jjaqueme/aegis-system/env/bin/python -m code.board.serverv2 --server
 #ExecReload=/bin/kill -s HUP $MAINPID
 ExecStop=/bin/kill -9 $MAINPID
 StandardOutput=file:/var/log/aegis/serverv2.log
