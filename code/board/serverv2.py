@@ -137,10 +137,10 @@ def main(server=False):
 
 
     for check in conf_manager.check_list:
-        updater(check)
-        # threads.append(threading.Thread(target=updater, args=(check,)))
-        # threads[-1].start()
-        # time.sleep(1)
+        # updater(check)
+        threads.append(threading.Thread(target=updater, args=(check,)))
+        threads[-1].start()
+        time.sleep(1)
 
     if (server):
         rich.print("[magenta]Started server")
