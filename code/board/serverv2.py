@@ -52,7 +52,7 @@ def check_changes(elem, conf):
     if elem_id not in buffers[conf_id].keys():
         buffers[conf_id][elem_id] = {
             **elem,
-            'train': {**elem['train'], 'delay': -1},
+            'train': {**elem['train'], 'delay': 10},
             "last_update": round(datetime.datetime.timestamp(datetime.datetime.now()))
         }
 
