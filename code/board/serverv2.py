@@ -100,16 +100,31 @@ def check_changes(elem, conf):
     )):
         notify(changes, elem, conf.get("name") or "")
 
-    buffers[conf_id][elem_id]["last_update"] = round(datetime.datetime.timestamp(datetime.datetime.now()))
+    buffers[conf_id][elem_id] = {
+        **buffers[conf_id][elem_id],
+        **elem,
+        "last_update": round(datetime.datetime.timestamp(datetime.datetime.now()))
+    }
+    buffers[conf_id][elem_id]
 
 def update(check):
     conf_id = check["id"]
     if (conf_id not in buffers.keys()):
         buffers[conf_id] = {}
 
-    if (check.get('type') == 'connection'): # period start and period end
-        res = conn_search(q=check.get('query'), l=check.get('checks') or 5)
-        # rich.print('res', res)
+    res = []
+
+    time_compare = datetime.datetime.now().strftime("%H:%M:%S")
+
+    if (check.get("check_start") != None and (
+        check.get("check_end") == None or (
+            time_compare >= check.get("check_start") and 
+            time_compare <= check.get("check_end")
+        )
+    )):
+        if (check.get('type') == 'connection'): # period start and period end
+            res = conn_search(q=check.get('query'), l=check.get('checks') or 5)
+            # rich.print('res', res)
 
     for elem in res:
         try:
