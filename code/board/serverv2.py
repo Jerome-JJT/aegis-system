@@ -28,14 +28,14 @@ def notify(changes, infos, conf_name):
         # embed["thumbnail"] = f'{fetched["avatar_url"]}',
         'footer_text': datetime.datetime.now().astimezone(tz=pytz.timezone('Europe/Zurich')).strftime('%Y-%m-%d %H:%M:%S')
     }
-    
+
     embed['title'] = f'{conf_name}: `{infos["from"]}` to `{infos["to"]}` at {infos["train"]["time"]}\n'
     embed['title'] += f'{infos["train"]["delay"]} {pluralize(infos["train"]["delay"], "minute", "minutes")} delay'
-    
+
     embed['fields'] = dict({
         k.capitalize(): f'ref: {v["old"]}{chr(10) if len(str(v["new"])) > 0 else " "}new: {v["new"]}' for k, v in changes.items()
     })
-    
+
     payload = create_discord_payload(embed)
     send_discord_payload(payload)
 
@@ -56,25 +56,39 @@ def check_changes(elem, conf):
             "last_update": round(datetime.datetime.timestamp(datetime.datetime.now()))
         }
 
+        if(elem["train"]["delay"] >= conf.get("min_delay")):
+            changes["delay"] = {
+                "old": '',
+                "new": elem["train"]["delay"]
+            }
+
+        if('!' in elem["train"]["platform"]):
+            changes["platform"] = {
+                "old": '',
+                "new": elem["train"]["platform"]
+            }
+
+
     # Get old or actual if not exists
     buffer_elem = buffers[conf_id][elem_id]
 
     # rich.print('cmp', elem, buffer_elem)
 
     # Diff checks
-    if (elem["train"]["delay"] != None and 
+    if (elem["train"]["delay"] != None and
         (
             (elem["train"]["delay"] > buffer_elem["train"]["delay"] and elem["train"]["delay"] >= conf.get("min_delay")) or
-            (elem["train"]["delay"] < buffer_elem["train"]["delay"] and buffer_elem["train"]["delay"] >= conf.get("min_delay")) 
+            (elem["train"]["delay"] < buffer_elem["train"]["delay"] and buffer_elem["train"]["delay"] >= conf.get("min_delay"))
         )
     ):
         changes["delay"] = {
-            "old": buffer_elem["train"]["delay"], 
+            "old": buffer_elem["train"]["delay"],
             "new": elem["train"]["delay"]
         }
-        
+
     if (elem["train"]["platform"] != None and
-        elem["train"]["platform"] != buffer_elem["train"]["platform"]
+        (elem["train"]["platform"] != buffer_elem["train"]["platform"] or
+         '!' in f'{elem["train"]["platform"]} {buffer_elem["train"]["platform"]}')
     ):
         changes["platform"] = {
             "old": buffer_elem["train"]["platform"],
@@ -94,7 +108,7 @@ def check_changes(elem, conf):
 
     if (len(changes) > 0 and conf.get("notify_start") != None and (
         conf.get("notify_end") == None or (
-            time_compare >= conf.get("notify_start") and 
+            time_compare >= conf.get("notify_start") and
             time_compare <= conf.get("notify_end")
         )
     )):
@@ -118,7 +132,7 @@ def update(check):
 
     if (check.get("check_start") != None and (
         check.get("check_end") == None or (
-            time_compare >= check.get("check_start") and 
+            time_compare >= check.get("check_start") and
             time_compare <= check.get("check_end")
         )
     )):
