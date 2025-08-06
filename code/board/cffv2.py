@@ -63,7 +63,7 @@ def conn_search(q="from=Chavornay&to=Renens", l=2):
 
     try:
         # url = f"http://transport.opendata.ch/v1/connections?{q}&limit={l}"
-        url = f"https://search.ch/timetable/api/route.json?show_delays=1&show_trackchanges=1&{q}&num={l}&time=17:00"
+        url = f"https://search.ch/timetable/api/route.json?show_delays=1&show_trackchanges=1&{q}&num={l}"
         # rich.print("REQ", url)
         req = requests.get(url)
 
